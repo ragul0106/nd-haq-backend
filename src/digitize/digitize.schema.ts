@@ -1,6 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
+export enum digitizeStatus {
+  pending = 'pending',
+  rejected = 'rejected',
+  verified = 'verified',
+}
 @Schema({ timestamps: true })
 export class Digitize {
   @Prop()
@@ -50,6 +55,9 @@ export class Digitize {
   personId: string;
   @Prop()
   caseId: string;
+  @Prop({ enum: digitizeStatus })
+  status: digitizeStatus;
+
   
 }
 

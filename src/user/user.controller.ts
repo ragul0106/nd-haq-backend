@@ -71,5 +71,11 @@ async findByRole(@Param('role') role: string,@Req() req) {
   req.message = 'Users with role fetched successfully';
   return this.userService.getUsersByRole(role);
 }
+@Get('/roles')
+async findAllRoles(@Req() req) {
+  req.message = 'Users with role fetched successfully';
+  return this.userService.getRoles();
+}
+
 
 }

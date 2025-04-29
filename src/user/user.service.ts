@@ -5,6 +5,7 @@ import { User, UserDocument } from './user.schema';
 import { SignJWT } from 'jose';
 import { isEmpty } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
+import { Role } from 'src/role/role.schema';
 
 
 @Injectable()
@@ -56,7 +57,7 @@ export class UserService {
                 throw new UnauthorizedException('User not approved, please contact admin');
             }
     
-            const token = await new SignJWT({ email: user.email, id: user._id, userId: user.userId })
+            const token = await new SignJWT({ email: user.email, id: user._id, userId: user.userId ,isLoggedIn:true,roles:JSON.stringify(user.role), name:user.name })
                 .setProtectedHeader({ alg: 'HS256' })
                 .setIssuedAt()
                 .setExpirationTime('2h')
@@ -96,7 +97,7 @@ export class UserService {
 
     async getSingleUser(userId: string): Promise<User> {
         try {
-            const user = await this.userModel.findOne({ userId, isActive: true }).populate('role').exec();
+            const user = await this.userModel.findOne({ userId, isActive: true }).exec();
             if (!user) {
                 throw new NotFoundException('User not found');
             }
@@ -105,6 +106,7 @@ export class UserService {
             if (error instanceof HttpException) {
                 throw error;
             }
+            console.error('error', error);
             throw new InternalServerErrorException('Error fetching user');
 
         }
@@ -235,6 +237,19 @@ export class UserService {
                 throw error;
             }
             throw new InternalServerErrorException('Error fetching approved users');
+        }
+    }
+    
+    async getRoles(): Promise<any[]> {
+        try {
+            
+            const roles = ['Admin', 'Attester', 'Maker', 'Schema Designer'];
+            return roles;
+        } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw new InternalServerErrorException('Error fetching roles');
         }
     }
     

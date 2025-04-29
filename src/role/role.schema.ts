@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Role {
-  @Prop({ required: true, enum: ['supperAdmin','admin', 'maker', 'attestor','schemaCreator'] })
+  @Prop({ required: true, enum: ['admin', 'maker', 'attestor','schemaCreator'] })
   Role: string;
 
   @Prop()

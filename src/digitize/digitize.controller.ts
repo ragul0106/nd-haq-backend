@@ -16,4 +16,7 @@ export class DigitizeController {
         const data = await this.digitizeService.getDocumentById(id);
         return { message: 'Document fetched successfully', data };
     }
+
+   
+
 }

@@ -1,6 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
+export enum userRoles {
+  Admin = 'Admin',
+  Attester = 'Attester',
+  Maker = 'Maker',
+  Schema = 'Schema'
+}
+
 @Schema({timestamps: true})
 export class User {
   @Prop()
@@ -38,7 +45,7 @@ export class User {
 
   @Prop({ type: Types.ObjectId, ref: 'User' })
   updatedBy: Types.ObjectId;
-  
+
   @Prop()
   accountCreationReason: string;
 }
