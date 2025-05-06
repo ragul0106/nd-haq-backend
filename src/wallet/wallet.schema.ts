@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import { DocumentTemplate } from 'src/document/document.schema';
 
 export enum WalletStatus {
   MakerNew = 'MakerNew',
@@ -11,8 +12,8 @@ export enum WalletStatus {
 
 @Schema({ timestamps: true })
 export class Wallet {
-  @Prop({ type: Types.ObjectId, ref: 'DocumentTemplate' })
-  documentId: Types.ObjectId;
+  @Prop()
+  documentId: string;
 
   @Prop({ type: Object })
   collectedData: object;
@@ -34,8 +35,12 @@ export class Wallet {
 
   @Prop()
   caseId: string;
- 
+
+  @Prop({ type: Types.ObjectId, ref: 'DocumentTemplate' })
+ documentObjectID:Types.ObjectId | DocumentTemplate;
 }
+
+ 
 
 export type WalletDocument = Wallet & Document;
 export const WalletSchema = SchemaFactory.createForClass(Wallet);

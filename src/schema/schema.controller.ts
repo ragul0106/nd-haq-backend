@@ -7,15 +7,20 @@ export class SchemaController {
   constructor(private readonly schemaService: SchemaService) {}
 
   @Post()
-  async create(@Body() createSchemaDto: CreateSchemaDto) {
+  async create(@Body() createSchemaDto: CreateSchemaDto) {   
     return this.schemaService.create(createSchemaDto);
   }
 
-  @Get()
+  @Get('/getAllSchemas')
   async findAll() {
-    //dont return if the schema.schemaName is not there
-     return this.schemaService.findAll().then(schemas => schemas.filter(schema => schema.schemaName).map(schema => ({ name: schema.schemaName })));
-     //return this.schemaService.findAll().then(schemas => schemas.map(schema => ({ name: schema.schemaName })));
+    const schemas = await this.schemaService.findAll(); // Now inferred as SchemaDocument[]
+    return schemas
+      .filter(schema => schema.schemaName)
+      .map(schema => ({
+        schemaName: schema.schemaName,
+        schema_id: schema._id, // ✅ No TS error
+        dhiway_id : schema.DhiwaySchemaId
+      }));
   }
 
   @Get('getSchema/:id')

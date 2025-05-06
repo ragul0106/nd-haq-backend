@@ -50,13 +50,23 @@ async delete(@Param('id') id: string,@Req() req) {
 @Get('/pending')
   async findPendingUsers(@Query() query: FindUserQueryDto,@Req() req) {
     req.message = 'Pending users fetched successfully';
-    return this.userService.getPendingUsers(query);
-  
+    return await this.userService.getPendingUsers(query);
+}
+
+@Get('/PendingAndApprovedUserCount')
+async getPendingAndApprovedUserCount(@Req() req) {
+  req.message = 'Pending and approved users count fetched successfully';
+  const pendingUsersCount = await this.userService.getPendingUsersCount();
+  const approvedUsersCount = await this.userService.getApprovedUsersCount();
+  return { pendingUsersCount, approvedUsersCount };
 }
 
 @Put('/approve/:id')
 async approveUser(@Param('id') id: string, @Body() body: { isApproved: boolean,roles:string[] },@Req() req) {
+
+  console.log(id);
   req.message = 'User approved successfully';
+
   return this.userService.approveUser(id, body.isApproved, body.roles);
 }
 
@@ -77,5 +87,15 @@ async findAllRoles(@Req() req) {
   return this.userService.getRoles();
 }
 
+@Put('/updateRole/:id')
+async updateRole(@Param('id') id: string, @Body() body: { roles: string[] },@Req() req) {
+  req.message = 'User role updated successfully';
+  return this.userService.updateRole(id, body.roles);
 
+}
+@Put('/deleteUser/:id')
+async deleteUser(@Param('id') id: string, @Body() body: { isActive: boolean },@Req() req) {
+  req.message = 'User deleted successfully';
+  return this.userService.deleteUser(id);
+}
 }

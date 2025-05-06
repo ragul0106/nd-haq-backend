@@ -22,7 +22,14 @@ export class UserService {
             
             const existingUser = await this.userModel.findOne({ email });
             if (existingUser) {
-                throw new ConflictException('Email is already registered');
+                if(existingUser.isActive) {
+                    throw new ConflictException('Email is already registered');
+                }else{
+                    existingUser.isActive = true;
+                    existingUser.isApproved = false;
+                    return existingUser.save();
+                }
+                
             }
 
             const user = new this.userModel({ email, isActive: true, isApproved: false, registerSentence, userId: uuidv4() ,name:createUserDto.name ,accountCreationReason:createUserDto.accountCreationReason });
@@ -57,7 +64,7 @@ export class UserService {
                 throw new UnauthorizedException('User not approved, please contact admin');
             }
     
-            const token = await new SignJWT({ email: user.email, id: user._id, userId: user.userId ,isLoggedIn:true,roles:JSON.stringify(user.role), name:user.name })
+            const token = await new SignJWT({ email: user.email, id: JSON.stringify(user._id), userId: user.userId ,isLoggedIn:true,roles:JSON.stringify(user.role), name:user.name,objectId:user._id })
                 .setProtectedHeader({ alg: 'HS256' })
                 .setIssuedAt()
                 .setExpirationTime('2h')
@@ -152,7 +159,7 @@ export class UserService {
     try {
         const { page = 1, limit = 10 } = query;
         const skip = (page - 1) * limit;
-
+        
         return this.userModel
             .find({ isApproved: false, isActive: true })
             .skip(skip)
@@ -168,24 +175,18 @@ export class UserService {
 
     async approveUser(_id: string, isApproved: boolean,roles:string[]): Promise<User> {
         try {
-            console.log(_id, isApproved);
-            
             const user = await this.userModel.findOne({ _id }).exec();
-            console.log(user);
             if (!user) {
                 throw new NotFoundException('User not found');
             }
-            user.role = roles;
-            // if (user.isApproved === isApproved) {
-            //     throw new ConflictException('User already has the same approval status');
-            // }
+                user.role = roles;
                 user.isApproved = true;
                 user.save()
             return user;
         } catch (error) {
             if (error instanceof HttpException) {
                 throw error;
-            }
+            }            
             throw new InternalServerErrorException('Error approving user');
         }
     }
@@ -252,5 +253,67 @@ export class UserService {
             throw new InternalServerErrorException('Error fetching roles');
         }
     }
-    
+    async updateRole(_id: string, role: string[]): Promise<User> {
+        try {
+            const user = await this.userModel.findOne({ _id }).exec();
+            if (!user) {
+                throw new NotFoundException('User not found');
+            }
+            if(role.length === 0) {
+                   user.isApproved = false;
+
+                   
+            }
+
+            user.role = role;
+            return user.save();
+        } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw new InternalServerErrorException('Error updating user role');
+        }
+    }
+    async deleteUser(_id: string): Promise<User> {
+        try {
+            const user = await this.userModel.findOne({ _id }).exec();
+            if (!user) {
+                throw new NotFoundException('User not found');
+            }
+            user.isActive = false;
+            user.isApproved = false;
+            user.role = [];
+
+
+            return user.save();
+        } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw new InternalServerErrorException('Error deleting user');
+        }
+
+}
+
+    async getPendingUsersCount(): Promise<number> {
+        try {
+            return this.userModel.countDocuments({ isApproved: false, isActive: true }).exec();
+        } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw new InternalServerErrorException('Error fetching pending users count');
+        }
+    }
+
+    async getApprovedUsersCount(): Promise<number> {
+        try {
+            return this.userModel.countDocuments({ isApproved: true, isActive: true }).exec();
+        } catch (error) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            throw new InternalServerErrorException('Error fetching approved users count');
+        }
+    }
 }

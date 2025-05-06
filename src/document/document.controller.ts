@@ -6,6 +6,7 @@ import {
     Param,
     Patch,
     Post,
+    Put,
     Query,
     UseGuards,
   } from '@nestjs/common';
@@ -16,7 +17,7 @@ import { CreateDocumentDto, UpdateDocumentDto } from './document.dto';
   
   @Controller('document')
   export class DocumentController {
-    constructor(private readonly documentServices: DocumentService) {}
+    constructor(private readonly documentServices: DocumentService,private readonly walletServices: WalletService) {}
   
     @Post('/create')
     async createDocument(@Body() body: CreateDocumentDto) {
@@ -51,5 +52,39 @@ import { CreateDocumentDto, UpdateDocumentDto } from './document.dto';
       return { message: 'Document deleted successfully', data };
     }
 
+    @Put('/digitize/:id')
+    async digitizeDocument( @Param('id') id: string,@Body() body: { digitizeStatus: string; digitizeData: any }) {
+      const data = await this.documentServices.digitizeDocument(id,body);
+      return { message: 'Document digitized successfully', data };
+    }
+
+    @Get('/read/documentByStatus/:status')
+    async getDocumentByStatus(@Param('status') status: string) {
+      const data = await this.documentServices.getDocumentByStatus(status);
+      return { message: 'Documents fetched successfully', data };
+    }
+
+    @Get('/read/documentByRole/:role')
+    async getDocumentByRole(@Param('role') role: string) {
+      const data = await this.documentServices.getDocumentByRole(role);
+      return { message: 'Documents fetched successfully', data };
+    }
+    @Put('/addComments/:id')
+   async addComments(
+      @Param('id') id: string,
+      @Body() body: { comment: string, userId: string },
+    ) {
+       
+      const data = await this.documentServices.addComments(id, body);
+      return { message: 'Comment added successfully', data };
+    }
+    @Get('/getCommets/:id') 
+    async getComments(@Param('id') id: string) {
+      const data = await this.documentServices.getComments(id);
+      return { message: 'Comments fetched successfully', data };
+    }
+
+    
+    
   }
   

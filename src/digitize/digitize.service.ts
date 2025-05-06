@@ -17,62 +17,57 @@ export class DigitizeService {
   ) {}
 
   // Create a new digitization request
-  async createDigitizeRequest(body: any): Promise<any> {
-    try {
-      const { personId, caseId, walletId, image, jsonData,documentId,attesterId,makerId,digitizationStatus } = body;
-   let  walletNewId=walletId
-   console.log(walletId, "walletId")
-   console.log(personId, "personId")
-    console.log(caseId, "caseId")
-    console.log(attesterId,makerId, "image")
+//   async createDigitizeRequest(body: any): Promise<any> {
+//     try {
+//       const { personId, caseId, walletId, image, jsonData,documentId,attesterId,makerId,digitizationStatus } = body;
+//    let  walletNewId=walletId
+//     // Check if the wallet exists or create a new one
+//     if (!walletId) {
+//       const walletData = await this.walletService.createWallet(body);
+//       walletNewId = walletData;  // Assign newly created wallet ID
+//     }
 
-    // Check if the wallet exists or create a new one
-    if (!walletId) {
-      const walletData = await this.walletService.createWallet(body);
-      walletNewId = walletData;  // Assign newly created wallet ID
-    }
+//     // Create new digitization request
+//     const newDigitize = new this.digitizeModel({
+//       personId,
+//       caseId,
+//       wallet: walletNewId,
+//       image,
+//       digitizedData: jsonData,
+//       documentId,
+//       attesterId,
+//       makerId,
 
-    // Create new digitization request
-    const newDigitize = new this.digitizeModel({
-      personId,
-      caseId,
-      wallet: walletNewId,
-      image,
-      digitizedData: jsonData,
-      documentId,
-      attesterId,
-      makerId,
+//     });
 
-    });
+// //update document status    
+//     const documentData = await this.documentService.getSingleDocument(documentId);
+//     if (documentData) {
+//       if(digitizationStatus=='digitise'){
 
-//update document status    
-    const documentData = await this.documentService.getSingleDocument(documentId);
-    if (documentData) {
-      if(digitizationStatus=='digitise'){
+//         documentData.status = Status.Success;
+//       }else if(digitizationStatus=='saved'){
 
-        documentData.status = Status.Success;
-      }else if(digitizationStatus=='saved'){
+//         documentData.status = Status.Saved;
+//       }else if(digitizationStatus=='reject'){
 
-        documentData.status = Status.Saved;
-      }else if(digitizationStatus=='reject'){
-
-        documentData.status = Status.Rejected;
-      }
-      console.log(documentData, "documentData")
+//         documentData.status = Status.Rejected;
+//       }
+//       console.log(documentData, "documentData")
     
-      await this.documentService.updateDocument(documentId, documentData);
-    } else {
-      throw new Error('Document not found');
-    }
+//       await this.documentService.updateDocument(documentId, documentData);
+//     } else {
+//       throw new Error('Document not found');
+//     }
 
 
-    return await newDigitize.save();
-    } catch (error) {
-      console.error('Error creating digitization request:', error);
-      throw new Error('Failed to create digitization request');
+//     return await newDigitize.save();
+//     } catch (error) {
+//       console.error('Error creating digitization request:', error);
+//       throw new Error('Failed to create digitization request');
       
-    }
-  }
+//     }
+//   }
 
   // Fetch single document by ID
   async getDocumentById(documentId: string): Promise<any> {

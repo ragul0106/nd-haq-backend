@@ -19,6 +19,9 @@ export class SchemaModel {
 
   @Prop({ enum: SchemaStatus, default: SchemaStatus.active })
   status: SchemaStatus;
+
+  @Prop()
+  DhiwaySchemaId:string
 }
 
 export type SchemaDocument = SchemaModel & Document;

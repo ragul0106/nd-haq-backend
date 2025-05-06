@@ -5,12 +5,12 @@ import { Types } from 'mongoose';
 
 @Controller('wallet')
 export class WalletController {
-  constructor(private readonly walletService: WalletService) {}
+  constructor(private readonly walletService: WalletService){}
 
-  @Post()
-  async createWallet(@Body() walletData: Partial<Wallet>): Promise<Wallet> {
-    return this.walletService.createWallet(walletData);
-  }
+  // @Post()
+  // async createWallet(@Body() walletData: Partial<Wallet>): Promise<Wallet> {
+  //   return this.walletService.createWallet(walletData);
+  // }
 
   @Get(':id')
   async getWalletById(@Param('id') id: string): Promise<Wallet> {
@@ -27,7 +27,10 @@ export class WalletController {
 
   @Get('person/:personId')
   async getWalletsByPerson(@Param('personId') personId: string): Promise<Wallet[]> {
-    return this.walletService.getWalletsByPerson(personId);
+    let wallet =await this.walletService.getWalletsByPerson(personId);
+    
+
+    return wallet;
   }
 
   @Get('case/:caseId')
