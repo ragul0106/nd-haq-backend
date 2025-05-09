@@ -30,11 +30,22 @@ export class SchemaService {
   setAppURL(url: string) {
     this.baseUrl = url;
   }
-  async create(dto: CreateSchemaDto): Promise<SchemaModel> {
+  async create(dto: any): Promise<SchemaModel> {
    try {
     
-     const created = new this.schemaModel(dto);
-    let DhiwaySchemaId = await this.addSchema(dto.jsonData)    
+    let schema={
+      jsonData: dto,
+      schemaName: dto.title,
+      createdBy: dto.createdBy,
+      status: dto.status,
+      DhiwaySchemaId: "",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+     if (!this.authToken) {
+    }
+     const created = new this.schemaModel(schema);     
+    let DhiwaySchemaId = await this.addSchema(dto)    
 
     let schemas = await created.save();
     schemas.DhiwaySchemaId = DhiwaySchemaId
@@ -76,6 +87,7 @@ async addSchema(schemaData: any): Promise<string> {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${this.authToken}`,
   }); 
+   console.log(schemaData);
    
  
   let jsonData ={
