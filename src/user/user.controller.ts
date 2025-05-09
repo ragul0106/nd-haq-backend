@@ -64,7 +64,6 @@ async getPendingAndApprovedUserCount(@Req() req) {
 @Put('/approve/:id')
 async approveUser(@Param('id') id: string, @Body() body: { isApproved: boolean,roles:string[] },@Req() req) {
 
-  console.log(id);
   req.message = 'User approved successfully';
 
   return this.userService.approveUser(id, body.isApproved, body.roles);

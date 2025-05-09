@@ -42,12 +42,12 @@ export class RoleSeeder {
       const exists = await this.roleModel.exists({ Role: role.Role });
       if (!exists) {
         await this.roleModel.create(role);
-        console.log(`✅ Inserted role: ${role.Role}`);
+        
       } else {
-        console.log(`ℹ️ Role already exists: ${role.Role}`);
+        
       }
     }
 
-    console.log('🎉 Role seeding completed.');
+    
   }
 }

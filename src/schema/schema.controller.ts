@@ -8,7 +8,7 @@ export class SchemaController {
 
   @Post()
   async create(@Body() createSchemaDto: CreateSchemaDto) {   
-    return this.schemaService.create(createSchemaDto);
+    return await this.schemaService.create(createSchemaDto);
   }
 
   @Get('/getAllSchemas')
@@ -19,7 +19,9 @@ export class SchemaController {
       .map(schema => ({
         schemaName: schema.schemaName,
         schema_id: schema._id, // ✅ No TS error
-        dhiway_id : schema.DhiwaySchemaId
+        dhiway_id : schema.DhiwaySchemaId,
+        created_at: schema.createdAt,
+
       }));
   }
 

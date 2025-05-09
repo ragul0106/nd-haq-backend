@@ -10,16 +10,18 @@ import { Model, Types } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 import { DocumentTemplate, DocumentTemplateType, DocumentStatus } from './document.schema';
 import { WalletService } from '../wallet/wallet.service';
-import { Wallet } from 'src/wallet/wallet.schema';
 import { DocumentComment } from './comment.schema';
- 
-@Injectable()
+import { SchemaService } from 'src/schema/schema.service';
+ @Injectable()
 export class DocumentService {
     
     constructor(
         @InjectModel(DocumentTemplate.name)
         private readonly documentModel: Model<DocumentTemplateType>,
-        private readonly walletService: WalletService    ) { }
+        private readonly walletService: WalletService,
+        private readonly schemaService: SchemaService // This is the missing dependency
+ 
+    ) { }
 
     async createDocument(createDto: Partial<DocumentTemplateType>): Promise<DocumentTemplateType> {
         try {
@@ -39,7 +41,7 @@ export class DocumentService {
             });
 
             return await document.save();
-        } catch (error) {
+        } catch (error) {            
             if (error instanceof HttpException) throw error;
             throw new InternalServerErrorException('Error creating document');
         }
@@ -61,7 +63,6 @@ export class DocumentService {
 
             return allDocuments;
         } catch (error) {
-            console.log(error, "fff")
             if (error instanceof HttpException) throw error;
             throw new InternalServerErrorException('Error fetching documents');
         }
@@ -83,7 +84,6 @@ export class DocumentService {
 
             return document;
         } catch (error) {
-            console.log(error)
             if (error instanceof HttpException) throw error;
             throw new InternalServerErrorException('Error fetching document');
         }
@@ -129,7 +129,7 @@ export class DocumentService {
 
     async digitizeDocument(documentId: string, digitizeData: any): Promise<DocumentTemplateType> {
         try {
-            const document = await this.documentModel.findOne({ documentId, isActive: true }).populate('schemaId','DhiwaySchemaId').exec();
+            const document = await this.documentModel.findOne({ documentId, isActive: true }).populate('schemaId', 'DhiwaySchemaId').exec();
             if (!document) {
                 throw new NotFoundException('Document not found');
             }
@@ -138,68 +138,52 @@ export class DocumentService {
             document.digitizedData = digitizeData.jsonData;
 
             if (digitizeData.digitizationStatus == 'digitise') {
-                console.log("test");
-                
-                const walletData={
-                    "documentId": document.documentId,
-                     "personId": document.personID,
-                     "documentObjectID":document._id as Types.ObjectId,
-                   
-                  }
-                  
-                
-             
-              let walletResponse =  await this.walletService.saveWallet(walletData);
-              console.log(walletResponse,"walletData1");
 
+               
+                let schemaData= await this.schemaService.getById(digitizeData.documentName)
+                 
                 document.documentStatus = DocumentStatus.MakerCompleted;
                 document.schemaId = digitizeData.documentName;
-                document.dhiwaySchemaId = digitizeData.dhiwaySchemaId
+                document.dhiwaySchemaId = schemaData.DhiwaySchemaId
 
-                if(document.accountId == null || document.accountId == "" || document.accountId == undefined) {                 
-                      await this.walletService.createWallet(document.personID+"@haqdarshak" , document.personName);                       
-                    accountData = await this.walletService.seedUser(document.personName, document.personID+"@haqdarshak");
-
+                if (document.accountId == null || document.accountId == "" || document.accountId == undefined) {
+                    accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
+                } else {
+                    accountData = await this.walletService.createWallet(document.personID + "@haqdarshak", document.personName);
+                    const walletData = {
+                        "documentId": document.documentId,
+                        "personId": document.personID,
+                        "documentObjectID": document._id as Types.ObjectId,
     
-               }
-                console.log(accountData,"d462a9bd-62e9-4023-bfeb-bdc63123819c");
-                
-               document.accountId = accountData.userDetails.accountId
-               let test_cert_data = {
-                    "did"        : accountData.userDetails.did,
-                    "name"       : "First test",
-                    "address"    : "Apni Gali, Apna Shehar",
-                    "issue_date" : "18 Mar 2024",
-                    "valid_till" : "19 Mar 2025",
-                    "income"     : 1000000
+                    }
+                    await this.walletService.saveWallet(walletData);
+                    if (accountData?.error) {
+                        accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
+                    }
+                    document.accountId = accountData.userDetails.accountId
+
                 }
-                
-             let walletServiceData =   await this.walletService.issueVc(digitizeData.dhiwaySchemaId,  test_cert_data)
-                  document.VcId = walletServiceData
-                
+               
+                let test_cert_data = digitizeData.jsonData
+                let walletServiceData = await this.walletService.issueVc(schemaData?.DhiwaySchemaId, test_cert_data)
+                 
+                let wallet = await this.walletService.updateWallet(walletServiceData, test_cert_data);
+                document.VcId = walletServiceData;
+
             } else if (digitizeData.digitizationStatus == 'saved') {
                 document.documentStatus = DocumentStatus.MakerSaved;
                 document.schemaId = digitizeData.documentName;
             } else if (digitizeData.digitizationStatus == 'reject') {
                 document.documentStatus = DocumentStatus.MakerRejected;
             } else if (digitizeData.digitizationStatus == 'issueCredential') {
-                accountData = await this.walletService.seedUser(document.personName, document.personID+"@haqdarshak");
+                accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
                 document.documentStatus = DocumentStatus.AttesterVerified;
                 digitizeData.documentObjectID = document._id
-                
-                let digitizedData = {
-                    "did"        : document.did,
-                    "name"       : "First test",
-                    "address"    : "Apni Gali, Apna Shehar",
-                    "issue_date" : "18 Mar 2024",
-                    "valid_till" : "19 Mar 2025",
-                    "income"     : 1000000
-                }
-                console.log(document);
                 let getCreds = await this.walletService.getCredentials(accountData.token)
-                let creds = await this.walletService.addCredential(accountData.userDetails.did,document.VcId,getCreds[0].credentialVC,accountData.token)
-                     
-             
+                 await this.walletService.addCredential(accountData.userDetails.did, document.VcId, getCreds[0].credentialVC, accountData.token)
+                 await this.walletService.callAgenAppAPI(document.caseId, 7)              
+
+
             } else if (digitizeData.digitizationStatus == 'attesterReject') {
                 document.documentStatus = DocumentStatus.AttesterRejected;
             } else if (digitizeData.digitizationStatus == 'attesterReword') {
@@ -209,8 +193,7 @@ export class DocumentService {
 
             return await document.save();
         } catch (error) {
-            console.log(error);
-
+             
             if (error instanceof HttpException) throw error;
             throw new InternalServerErrorException('Error digitizing document');
         }
@@ -256,7 +239,6 @@ export class DocumentService {
             } else {
                 filteredDocuments = documents;
             }
-            console.log(role, "role")
             return filteredDocuments;
         } catch (error) {
             if (error instanceof HttpException) throw error;
@@ -270,11 +252,11 @@ export class DocumentService {
                 throw new NotFoundException('Document not found');
             }
 
-            console.log(commentData, "commentData");
+                
 
             const newComment: DocumentComment = {
                 comment: commentData.comment,
-                userId: new Types.ObjectId(commentData.userId),
+                userId: commentData.userId,
                 createdAt: new Date()
             };
 
@@ -286,7 +268,6 @@ export class DocumentService {
             await document.save();
             return document.comments;
         } catch (error) {
-            console.log(error);
 
             if (error instanceof HttpException) throw error;
             throw new InternalServerErrorException('Error adding comment');
@@ -295,11 +276,30 @@ export class DocumentService {
     async getComments(documentId: string): Promise<any> {
         try {
 
-            const document = await this.documentModel.findOne({ documentId, isActive: true }).populate('comments.userId', 'name email mobileNumber').exec();
+            const document = await this.documentModel.findOne({ documentId, isActive: true }).populate('comments.userId', 'userId name email mobileNumber role').exec();
             if (!document) {
                 throw new NotFoundException('Document not found');
             }
-
+            //need to add role in comment
+            if (!document.comments || document.comments.length === 0) {
+                throw new NotFoundException('No comments found for this document');
+            } 
+            const userIds = document.comments.map(c => c.userId);
+             
+            // document.comments = document.comments.map((comment: DocumentComment) => {
+            //     const user = comment.userId as any; // Ensure userId is populated
+            //     console.log(user, "document.comments");
+            //     return {
+            //         ...comment,
+            //         userDetails: {
+            //             userId: user.userId,
+            //             name: user.name,
+            //             email: user.email,
+            //             mobileNumber: user.mobileNumber,
+            //             role: user.role
+            //         }
+            //     };
+            // });
             return document.comments;
         } catch (error) {
             if (error instanceof HttpException) throw error;
@@ -307,6 +307,37 @@ export class DocumentService {
         }
 
 
+    }
+
+    async getDocumentByUser(userId: string): Promise<DocumentTemplateType[]> {
+        try {
+            const documents = await this.documentModel
+                .find({ personID: userId, isActive: true })
+                .populate('fields')
+                .populate('createdBy')
+                .populate('updatedBy')
+                .exec();
+
+            if (!documents || documents.length === 0) {
+                throw new NotFoundException('No documents found for this user');
+            }
+        let userData = await this.walletService.seedUser(documents[0].personName, userId + "@haqdarshak");
+             if (userData?.error) {
+                throw new NotFoundException('User not found');
+            }
+            const getCreds = await this.walletService.getCredentials(userData.token);
+             if (getCreds?.error) {
+                throw new NotFoundException('Credentials not found');
+            }
+            const credential = getCreds[0].credentialVC;
+             if (credential?.error) {
+            }
+
+            return credential;
+        } catch (error) {
+            if (error instanceof HttpException) throw error;
+            throw new InternalServerErrorException('Error fetching documents by user');
+        }
     }
 
 }

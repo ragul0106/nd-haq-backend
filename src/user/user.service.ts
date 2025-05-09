@@ -18,7 +18,7 @@ export class UserService {
     async create(createUserDto: Partial<User>): Promise<User> {
         try {
             const { email, registerSentence } = createUserDto;
-            console.log(createUserDto);
+            
             
             const existingUser = await this.userModel.findOne({ email });
             if (existingUser) {
@@ -38,8 +38,7 @@ export class UserService {
             if (error instanceof HttpException) {
                 throw error;
             }
-            console.log(error);
-            throw new InternalServerErrorException('Error creating user');
+             throw new InternalServerErrorException('Error creating user');
 
         }
 
@@ -95,7 +94,6 @@ export class UserService {
             if (error instanceof HttpException) {
                 throw error;
             }
-            console.log(error);
             
             throw new InternalServerErrorException('Error fetching users');
         }
@@ -209,7 +207,6 @@ export class UserService {
 
     async getUsersByRole(role: string): Promise<User[]> {
         try {
-            console.log(role);
             
             const users = await this.userModel.find({ role, isActive: true }).exec();
             if (!users || users.length === 0) {

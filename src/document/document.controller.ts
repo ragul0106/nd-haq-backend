@@ -11,13 +11,12 @@ import {
     UseGuards,
   } from '@nestjs/common';
   import { DocumentService } from './document.service';
-  import { WalletService } from 'src/wallet/wallet.service';
 import { JwtAuthGuard } from 'src/user/jwt-auth.guard';
 import { CreateDocumentDto, UpdateDocumentDto } from './document.dto';
   
   @Controller('document')
   export class DocumentController {
-    constructor(private readonly documentServices: DocumentService,private readonly walletServices: WalletService) {}
+    constructor(private readonly documentServices: DocumentService) {}
   
     @Post('/create')
     async createDocument(@Body() body: CreateDocumentDto) {
@@ -84,7 +83,11 @@ import { CreateDocumentDto, UpdateDocumentDto } from './document.dto';
       return { message: 'Comments fetched successfully', data };
     }
 
-    
+    @Get('/documentByUser/:userId')
+    async getDocumentByUser(@Param('userId') userId: string) {
+      const data = await this.documentServices.getDocumentByUser(userId);
+      return { message: 'Documents fetched successfully', data };
+    }
     
   }
   

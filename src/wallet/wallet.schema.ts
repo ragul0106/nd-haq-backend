@@ -38,6 +38,8 @@ export class Wallet {
 
   @Prop({ type: Types.ObjectId, ref: 'DocumentTemplate' })
  documentObjectID:Types.ObjectId | DocumentTemplate;
+ @Prop()
+ identifier:string
 }
 
  

@@ -32,18 +32,19 @@ export class SchemaService {
   }
   async create(dto: CreateSchemaDto): Promise<SchemaModel> {
    try {
-    console.log(dto);
-    const created = new this.schemaModel(dto);
+    
+     const created = new this.schemaModel(dto);
+    let DhiwaySchemaId = await this.addSchema(dto.jsonData)    
+
     let schemas = await created.save();
-    let DhiwaySchemaId = await this.addSchema(dto)  
     schemas.DhiwaySchemaId = DhiwaySchemaId
-    return await created.save();
+     
+    return schemas;
 
 
 
    } catch (error) {
-    console.log(error);
-    
+     
     return error
    }
   }
@@ -58,8 +59,7 @@ export class SchemaService {
        let schema = await this.schemaModel.findOne({ _id: id }).exec();
         return schema;
     } catch (error) {
-        console.error('Error reading file:', error);
-        throw new Error('Error reading file');
+         throw new Error('Error reading file');
         
     }
 }
@@ -72,36 +72,19 @@ async addSchema(schemaData: any): Promise<string> {
   if (!this.authToken) {
     return this._handleMissingToken();
   }
-
   const headers = new axios.AxiosHeaders({
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${this.authToken}`,
-  });
-  let schemaData1 = {
-    "title": "Income Certificate",
-    "description": "Income Certficate",
-    "properties": {
-      "did": {
-        "type": "string"
-      },
-      "name": {
-        "type": "string"
-      },
-      "address": {
-        "type": "string"
-      },
-      "issue_date": {
-        "type": "string"
-      },
-      "valid_till": {
-        "type": "string"
-      },
-      "income": {
-        "type": "integer"
-      }
-    }
+  }); 
+   
+ 
+  let jsonData ={
+    title:schemaData.title,
+    description:schemaData.description,
+    properties:schemaData.properties
   }
-  const payload = { schema: schemaData1 };
+    
+  const payload = { schema: jsonData };
   try {
     const response = await axios.post(url, payload, { headers });
     if (
@@ -111,11 +94,9 @@ async addSchema(schemaData: any): Promise<string> {
     ) {
       throw new HttpException('Unexpected result from addSchema', HttpStatus.BAD_REQUEST);
     }
-    console.log(response.data.schemaId, "response.data.schemaId");
 
     return response.data.schemaId;
   } catch (error) {
-    console.error('Error creating schema:', error);
     return "";
   }
 }
@@ -137,8 +118,7 @@ async getSchema(schemaId: string): Promise<any> {
     const response = await axios.get(url, { headers });
     return response.data;
   } catch (error) {
-    console.error('Error fetching schema:', error.message);
-    return null;
+     return null;
   }
 }
   
@@ -148,8 +128,7 @@ private _handleMissingToken(): string {
 }
 
 private _handleRequestError(e: any, context: string) {
-  console.error(`Error in ${context}:`, e.message);
-  return e.response?.data || {
+   return e.response?.data || {
     error: 'Request Failed',
     message: e.message,
   };

@@ -17,11 +17,17 @@ export class SchemaModel {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   createdBy: Types.ObjectId;
 
+
   @Prop({ enum: SchemaStatus, default: SchemaStatus.active })
   status: SchemaStatus;
 
   @Prop()
   DhiwaySchemaId:string
+  @Prop()
+  createdAt: Date;
+  
+  @Prop()
+  updatedAt: Date;
 }
 
 export type SchemaDocument = SchemaModel & Document;
