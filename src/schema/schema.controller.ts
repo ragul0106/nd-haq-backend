@@ -31,4 +31,8 @@ export class SchemaController {
       const schema = await this.schemaService.getById(id);
       return schema;
   }
+  @Get('getSchemaByName/testFunction')
+  async testFunction(){
+    return this.schemaService.testFunction()
+  }
 }

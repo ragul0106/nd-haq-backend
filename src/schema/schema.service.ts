@@ -42,8 +42,7 @@ export class SchemaService {
       createdAt: new Date(),
       updatedAt: new Date(),
     }
-     if (!this.authToken) {
-    }
+  
      const created = new this.schemaModel(schema);     
     let DhiwaySchemaId = await this.addSchema(dto)    
 
@@ -133,7 +132,10 @@ async getSchema(schemaId: string): Promise<any> {
      return null;
   }
 }
-  
+
+   async testFunction(){
+      return "test"
+   }
 
 private _handleMissingToken(): string {
   return 'Authentication token is required. Please set the token using setAppToken().';
