@@ -49,7 +49,7 @@ export class SchemaService {
 
     let schemas = await created.save();
     schemas.DhiwaySchemaId = DhiwaySchemaId
-     
+    await created.save();
     return schemas;
 
 

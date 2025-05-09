@@ -138,25 +138,28 @@ export class DocumentService {
             document.digitizedData = digitizeData.jsonData;
 
             if (digitizeData.digitizationStatus == 'digitise') {
-
-               
                 let schemaData= await this.schemaService.getById(digitizeData.documentName)
-                 
+        
                 document.documentStatus = DocumentStatus.MakerCompleted;
                 document.schemaId = digitizeData.documentName;
                 document.dhiwaySchemaId = schemaData.DhiwaySchemaId
-
+ 
                 if (document.accountId == null || document.accountId == "" || document.accountId == undefined) {
+                    console.log("1");
+                    
                     accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
+                    document.accountId = accountData.userDetails.accountId
                 } else {
+                    console.log("2");
                     accountData = await this.walletService.createWallet(document.personID + "@haqdarshak", document.personName);
-                    const walletData = {
+                     const walletData = {
                         "documentId": document.documentId,
                         "personId": document.personID,
                         "documentObjectID": document._id as Types.ObjectId,
-    
                     }
-                    await this.walletService.saveWallet(walletData);
+                let appWallet = await this.walletService.saveWallet(walletData);
+                console.log(appWallet, "appWallet");
+                
                     if (accountData?.error) {
                         accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
                     }
@@ -165,9 +168,10 @@ export class DocumentService {
                 }
                
                 let test_cert_data = digitizeData.jsonData
+                 
                 let walletServiceData = await this.walletService.issueVc(schemaData?.DhiwaySchemaId, test_cert_data)
                  
-                let wallet = await this.walletService.updateWallet(walletServiceData, test_cert_data);
+           //  let wallet = await this.walletService.updateWallet(walletServiceData, test_cert_data);
                 document.VcId = walletServiceData;
 
             } else if (digitizeData.digitizationStatus == 'saved') {
@@ -193,6 +197,7 @@ export class DocumentService {
 
             return await document.save();
         } catch (error) {
+             console.log(error);
              
             if (error instanceof HttpException) throw error;
             throw new InternalServerErrorException('Error digitizing document');
