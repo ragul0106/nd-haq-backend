@@ -41,6 +41,8 @@ export class WalletService {
   async getWalletsByPerson(personId: string): Promise<any[]> {
     try {      
       const walletData = await this.walletModel.find({ personId }).populate({ path: 'documentObjectID' }).exec();
+      console.log(walletData,"walletData");
+      
     if (walletData[0]?.documentObjectID && 'personName' in walletData[0]?.documentObjectID) {
         if (walletData[0]?.documentObjectID?.personName) {
           const accountData = await this.seedUser(walletData[0]?.documentObjectID.personName, walletData[0].documentObjectID.accountId);
