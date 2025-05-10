@@ -143,32 +143,27 @@ export class DocumentService {
                 document.documentStatus = DocumentStatus.MakerCompleted;
                 document.schemaId = digitizeData.documentName;
                 document.dhiwaySchemaId = schemaData.DhiwaySchemaId
- 
                 if (document.accountId == null || document.accountId == "" || document.accountId == undefined) {
-                    console.log("1");
-                    
                     accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
+                    console.log(accountData, "accountData");
                     document.accountId = accountData.userDetails.accountId
                 } else {
-                    console.log("2");
                     accountData = await this.walletService.createWallet(document.personID + "@haqdarshak", document.personName);
-                     const walletData = {
+                    const walletData = {
                         "documentId": document.documentId,
                         "personId": document.personID,
                         "documentObjectID": document._id as Types.ObjectId,
+    
                     }
                 let appWallet = await this.walletService.saveWallet(walletData);
-                console.log(appWallet, "appWallet");
-                
                     if (accountData?.error) {
                         accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
                     }
-                    document.accountId = accountData.userDetails.accountId
+                    document.accountId = accountData.userDetails?.accountId
 
                 }
                
                 let test_cert_data = digitizeData.jsonData
-                 
                 let walletServiceData = await this.walletService.issueVc(schemaData?.DhiwaySchemaId, test_cert_data)
                  
            //  let wallet = await this.walletService.updateWallet(walletServiceData, test_cert_data);
