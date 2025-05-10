@@ -158,8 +158,19 @@ export class WalletService {
   }
 
   async saveWallet(data: Partial<Wallet>): Promise<Wallet> {
-    const wallet = new this.walletModel(data);
-    return wallet.save();
+    //create only if personId does not exist
+    const existingWallet = await this.walletModel.findOne({ personId: data.personId });
+    if (!existingWallet) {
+      const wallet = new this.walletModel(data);
+      return wallet.save();
+    } else {
+      return existingWallet;
+      //retur
+     // throw new HttpException('Wallet with this personId already exists', HttpStatus.BAD_REQUEST);
+    }
+
+
+    
   }
 
 

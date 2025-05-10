@@ -149,6 +149,13 @@ export class DocumentService {
                          await this.walletService.createWallet(document.personID + "@haqdarshak", document.personName);
                          accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
                          document.accountId = accountData.userDetails.accountId
+                         const walletData = {
+                            "documentId": document.documentId,
+                            "personId": document.personID,
+                            "documentObjectID": document._id as Types.ObjectId,
+        
+                        }
+                     await this.walletService.saveWallet(walletData);
                     }
                   
                 } else {
@@ -159,7 +166,7 @@ export class DocumentService {
                         "documentObjectID": document._id as Types.ObjectId,
     
                     }
-                let appWallet = await this.walletService.saveWallet(walletData);
+                 await this.walletService.saveWallet(walletData);
                     if (accountData?.error) {
                         accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
                     }
