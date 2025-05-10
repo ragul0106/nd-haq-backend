@@ -145,8 +145,12 @@ export class DocumentService {
                 document.dhiwaySchemaId = schemaData.DhiwaySchemaId
                 if (document.accountId == null || document.accountId == "" || document.accountId == undefined) {
                     accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
-                    console.log(accountData, "accountData");
-                    document.accountId = accountData.userDetails.accountId
+                    if(accountData?.error=='User does not exist') {
+                         await this.walletService.createWallet(document.personID + "@haqdarshak", document.personName);
+                         accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
+                         document.accountId = accountData.userDetails.accountId
+                    }
+                  
                 } else {
                     accountData = await this.walletService.createWallet(document.personID + "@haqdarshak", document.personName);
                     const walletData = {
