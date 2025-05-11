@@ -193,6 +193,9 @@ export class DocumentService {
             } else if (digitizeData.digitizationStatus == 'reject') {
                 document.documentStatus = DocumentStatus.MakerRejected;
             } else if (digitizeData.digitizationStatus == 'issueCredential') {
+                console.log(document.personName, document.personID + "@haqdarshak", "accountData");
+                
+                
                 accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
                 document.documentStatus = DocumentStatus.AttesterVerified;
                 digitizeData.documentObjectID = document._id
