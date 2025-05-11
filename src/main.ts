@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './utils/interceptor/error.interceptor';
 import { ResponseInterceptor } from './utils/interceptor/response.interceptor';
+import { join } from 'path';
+import * as express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule,{
@@ -17,7 +19,7 @@ async function bootstrap() {
 
   //error handler
   app.useGlobalFilters(new GlobalExceptionFilter());
-  
+  app.use('/images', express.static(join(__dirname, '..', 'public', 'images')));
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

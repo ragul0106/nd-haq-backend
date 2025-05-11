@@ -32,6 +32,14 @@ export class Wallet {
 
   @Prop()
   personId: string;
+  @Prop()
+  personName: string;
+  @Prop()
+  agentName: string;
+  @Prop()
+  createdAt: Date;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
 
   @Prop()
   caseId: string;

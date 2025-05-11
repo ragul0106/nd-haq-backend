@@ -40,21 +40,23 @@ export class WalletService {
 
   async getWalletsByPerson(personId: string): Promise<any[]> {
     try {      
-      const walletData = await this.walletModel.find({ personId }).populate({ path: 'documentObjectID' }).exec();
-      console.log(walletData,"walletData");
-      
-    if (walletData[0]?.documentObjectID && 'personName' in walletData[0]?.documentObjectID) {
-        if (walletData[0]?.documentObjectID?.personName) {
-          const accountData = await this.seedUser(walletData[0]?.documentObjectID.personName, walletData[0].documentObjectID.accountId);
-          return this.getCredentials(accountData.token);
-        }
-      }
+      const walletData = await this.walletModel.findOne({ personId }).populate({ path: 'documentObjectID' }).exec();
+      if (walletData) {
+        if (walletData.documentObjectID && 'accountId' in walletData.documentObjectID) {
+          const accountData = await this.seedUser(walletData.personName, walletData.documentObjectID.accountId);
+           if(accountData?.token) {
+            const credentials = await this.getCredentials(accountData.token);
+             return credentials;
+          }  
+          
+        }  
+      }  
 
 
       return [];
     } catch (error) {
 
-      return error;
+      return [];
     }
   }
 
@@ -164,7 +166,14 @@ export class WalletService {
       const wallet = new this.walletModel(data);
       return wallet.save();
     } else {
-      return existingWallet;
+      //update the record
+      existingWallet.documentId = data.documentId ?? '';
+       existingWallet.personId = data.personId ?? '';
+      existingWallet.personName = data.personName ?? '';
+      existingWallet.agentName = data.agentName ?? '';
+      existingWallet.createdAt = data.createdAt ?? new Date();
+      
+      return existingWallet.save();;
       //retur
      // throw new HttpException('Wallet with this personId already exists', HttpStatus.BAD_REQUEST);
     }
@@ -253,12 +262,23 @@ export class WalletService {
   } 
   async getAllUniqueUsers(): Promise<any[]> {
     try {
+      const uniqueUsers = await this.walletModel.distinct('personId');
 
-       const uniqueUsers = await this.walletModel.distinct('personId');
-       return uniqueUsers;
+      const userDetails = await Promise.all(uniqueUsers.map(async (userId) => {
+        const walletData = await this.walletModel.find({ personId: userId }).exec();
+        if (walletData.length > 0) {
+          const user = walletData[0];
+          return {
+            id: user.personId,
+            userName: user.personName,
+            createdBy: user.createdBy,
+          };
+        }
+        return null;
+      }));
+      return userDetails.filter((user) => user !== null);
     } catch (error) {
-
-      throw new HttpException('Error fetching unique users', HttpStatus.INTERNAL_SERVER_ERROR);
+      return []; // Return an empty array in case of an error
     }
   }
 }

@@ -12,6 +12,9 @@ import { DocumentTemplate, DocumentTemplateType, DocumentStatus } from './docume
 import { WalletService } from '../wallet/wallet.service';
 import { DocumentComment } from './comment.schema';
 import { SchemaService } from 'src/schema/schema.service';
+import * as fs from 'fs';
+import * as path from 'path';
+import axios from 'axios';
  @Injectable()
 export class DocumentService {
     
@@ -30,6 +33,9 @@ export class DocumentService {
             const existing = await this.documentModel.findOne({ name, documentType, isActive: true });
             if (existing) {
                 throw new ConflictException('Document with this name already exists');
+            }
+            if(createDto.imageUrl){
+                createDto.imageUrl = await this.downloadImageToServer(createDto.imageUrl)
             }
 
             const document = new this.documentModel({
@@ -149,14 +155,17 @@ export class DocumentService {
                          await this.walletService.createWallet(document.personID + "@haqdarshak", document.personName);
                          accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
                          document.accountId = accountData.userDetails.accountId
-                         const walletData = {
-                            "documentId": document.documentId,
-                            "personId": document.personID,
-                            "documentObjectID": document._id as Types.ObjectId,
-        
-                        }
-                     await this.walletService.saveWallet(walletData);
                     }
+                    const walletData = {
+                        "documentId": document.documentId,
+                        "personId": document.personID,
+                        "documentObjectID": document._id as Types.ObjectId,
+                        "personName": document.personName,
+                        "agentName": document.agentName,
+                        "createdAt": new Date()
+    
+                    }
+                 await this.walletService.saveWallet(walletData);
                   
                 } else {
                     accountData = await this.walletService.createWallet(document.personID + "@haqdarshak", document.personName);
@@ -164,6 +173,9 @@ export class DocumentService {
                         "documentId": document.documentId,
                         "personId": document.personID,
                         "documentObjectID": document._id as Types.ObjectId,
+                        "personName": document.personName,
+                        "agentName": document.agentName,
+                        "createdAt": new Date()
     
                     }
                  await this.walletService.saveWallet(walletData);
@@ -173,6 +185,7 @@ export class DocumentService {
                     document.accountId = accountData.userDetails?.accountId
 
                 }
+                document.accountId = accountData.userDetails?.accountId
                
                 let test_cert_data = digitizeData.jsonData
                 let walletServiceData = await this.walletService.issueVc(schemaData?.DhiwaySchemaId, test_cert_data)
@@ -350,5 +363,49 @@ export class DocumentService {
             throw new InternalServerErrorException('Error fetching documents by user');
         }
     }
+ 
+async downloadImageToServer(imageUrl: string): Promise<string> {
+   
+    let saveFolder = 'images';
+     let filename = imageUrl.split('/').pop()?.split('?')[0] || 'default.jpg';
+     let presignedUrl = imageUrl;
+    let baseUrl = process.env.BASE_URL ?? 'http://localhost:3000';
+    const dir = path.resolve(__dirname, '..', '..', 'public', saveFolder);
+
+
+  // Ensure the folder exists
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+
+  if (!filename) {
+    throw new Error('Filename could not be determined from the image URL');
+  }
+  const savePath = path.join(dir, filename);
+
+  try {
+    // Download the image and save it to the folder
+    const writer = fs.createWriteStream(savePath);
+
+    const response = await axios({
+      method: 'GET',
+      url: presignedUrl,
+      responseType: 'stream',
+    });
+
+    response.data.pipe(writer);
+
+    return new Promise((resolve, reject) => {
+      writer.on('finish', () => {
+        // Return the URL of the saved image
+        const publicUrl = `${baseUrl}/${saveFolder}/${filename}`;
+        resolve(publicUrl);
+      });
+      writer.on('error', reject);
+    });
+  } catch (error) {
+    throw new Error(`Failed to download image from presigned URL: ${error.message}`);
+  }
+}
 
 }
