@@ -185,7 +185,7 @@ export class DocumentService {
                 let test_cert_data = digitizeData.jsonData
                 let walletServiceData = await this.walletService.issueVc(schemaData?.DhiwaySchemaId, test_cert_data)
         
-                document.VcId = walletServiceData.id; // Assuming walletServiceData is a string, directly assign it
+                document.VcId = walletServiceData.identifier; // Assuming walletServiceData is a string, directly assign it
                 document.verifiableCredentials= walletServiceData.vc;
 
             } else if (digitizeData.digitizationStatus == 'saved') {
