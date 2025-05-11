@@ -194,13 +194,12 @@ export class DocumentService {
                 document.documentStatus = DocumentStatus.MakerRejected;
             } else if (digitizeData.digitizationStatus == 'issueCredential') {
                 console.log(document.personName, document.personID + "@haqdarshak", "accountData");
-                
+
                 
                 accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
                 document.documentStatus = DocumentStatus.AttesterVerified;
                 digitizeData.documentObjectID = document._id
-                let getCreds = await this.walletService.getCredentials(accountData.token)
-                 await this.walletService.addCredential(accountData.userDetails.did, document.VcId, getCreds[0].credentialVC, accountData.token)
+                 await this.walletService.addCredential(accountData.userDetails.did, document.VcId, document.VcId, accountData.token)
                  await this.walletService.callAgenAppAPI(document.caseId, 7)              
 
 
