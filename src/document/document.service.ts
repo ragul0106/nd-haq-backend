@@ -135,9 +135,10 @@ export class DocumentService {
             }
             let accountData;
             document.isApproved = true;
-            document.digitizedData = digitizeData.jsonData;
+        
 
             if (digitizeData.digitizationStatus == 'digitise') {
+                document.digitizedData = digitizeData.jsonData;
                 let schemaData= await this.schemaService.getById(digitizeData.documentName)
         
                 document.documentStatus = DocumentStatus.MakerCompleted;
@@ -183,9 +184,9 @@ export class DocumentService {
                
                 let test_cert_data = digitizeData.jsonData
                 let walletServiceData = await this.walletService.issueVc(schemaData?.DhiwaySchemaId, test_cert_data)
-                 
-           //  let wallet = await this.walletService.updateWallet(walletServiceData, test_cert_data);
-                document.VcId = walletServiceData;
+        
+                document.VcId = walletServiceData.id; // Assuming walletServiceData is a string, directly assign it
+                document.verifiableCredentials= walletServiceData.vc;
 
             } else if (digitizeData.digitizationStatus == 'saved') {
                 document.documentStatus = DocumentStatus.MakerSaved;
@@ -196,9 +197,7 @@ export class DocumentService {
                 accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
                 document.documentStatus = DocumentStatus.AttesterVerified;
                 digitizeData.documentObjectID = document._id
-              let addedCreds =   await this.walletService.addCredential(accountData.userDetails.did, document.VcId, document.digitizedData, accountData.token)
-              console.log(addedCreds, "addedCreds");
-              console.log(document.digitizedData, "document.digitizedData");
+              let addedCreds =   await this.walletService.addCredential(accountData.userDetails.did, document.VcId, document.verifiableCredentials, accountData.token)
               
                  await this.walletService.callAgenAppAPI(document.caseId, 7)              
 

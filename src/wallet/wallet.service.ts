@@ -124,7 +124,7 @@ export class WalletService {
     this.initializeApp('https://wallet-api.demo.dhiway.net/api/v1', 'c780754e-4322-4f27-8668-fb0224e126f1');
     const url = `${this.baseUrl}/message/create/${did}`;
 
-    const headers = this.buildHeaders(token);
+    const headers = this.buildHeaders('c780754e-4322-4f27-8668-fb0224e126f1');
     const payload = this.buildCredentialPayload(did, vcId, vc);
 
     try {
@@ -135,7 +135,7 @@ export class WalletService {
     }
   }
 
-  async issueVc(schemaId: string, credentialData: any): Promise<string> {
+  async issueVc(schemaId: string, credentialData: any): Promise<any> {
     this.initializeApp('https://issuer-agent-api.demo.dhiway.net/api/v1', 'c780754e-4322-4f27-8668-fb0224e126f1');
     const url = `${this.baseUrl}/cred`;
 
@@ -151,11 +151,10 @@ export class WalletService {
       if (response.status !== 200 || response.data.result?.toLowerCase() !== 'success' || !response.data.identifier) {
         throw new HttpException('Unexpected result from issueVc', HttpStatus.BAD_REQUEST);
       }
-
-      return response.data.identifier;
+      return response.data;
     } catch (error) {
 
-      return '';
+      return {};
     }
   }
 
@@ -221,8 +220,8 @@ export class WalletService {
     };
   }
 
-  private handleMissingToken(): string {
-    return 'Authentication token is required. Please set the token using setAppToken().';
+  private handleMissingToken(): object {
+    return { error: 'Authentication token is required. Please set the token using setAppToken().' };
   }
 
   private handleRequestError(e: any, context: string): any {

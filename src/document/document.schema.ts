@@ -109,12 +109,14 @@ import { SchemaModel } from 'src/schema/schema.schema';
     @Prop()
     dhiwaySchemaId:string
 
-     @Prop()
-     did :string
+    @Prop()
+    did :string
 
-     @Prop()
-      VcId:string
-   
+    @Prop()
+    VcId:string
+
+    @Prop({ type: Object })
+    verifiableCredentials: object
   }
 
   export type DocumentTemplateType = DocumentTemplate & Document;
