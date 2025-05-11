@@ -192,15 +192,13 @@ export class DocumentService {
                 document.schemaId = digitizeData.documentName;
             } else if (digitizeData.digitizationStatus == 'reject') {
                 document.documentStatus = DocumentStatus.MakerRejected;
-            } else if (digitizeData.digitizationStatus == 'issueCredential') {
-                console.log(document.personName, document.personID + "@haqdarshak", "accountData");
-
-                
+            } else if (digitizeData.digitizationStatus == 'issueCredential') {                
                 accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
                 document.documentStatus = DocumentStatus.AttesterVerified;
                 digitizeData.documentObjectID = document._id
-              let addedCreds =   await this.walletService.addCredential(accountData.userDetails.did, document.VcId, document.VcId, accountData.token)
+              let addedCreds =   await this.walletService.addCredential(accountData.userDetails.did, document.VcId, document.digitizedData, accountData.token)
               console.log(addedCreds, "addedCreds");
+              console.log(document.digitizedData, "document.digitizedData");
               
                  await this.walletService.callAgenAppAPI(document.caseId, 7)              
 
@@ -211,8 +209,7 @@ export class DocumentService {
                 document.documentStatus = DocumentStatus.AttesterRework;
             }
 
-            console.log(document.digitizedData, "document.digitizedData");
-            
+             
             return await document.save();
         } catch (error) {
              console.log(error);

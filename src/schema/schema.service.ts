@@ -86,8 +86,7 @@ async addSchema(schemaData: any): Promise<string> {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${this.authToken}`,
   }); 
-   console.log(schemaData);
-   
+    
  
   let jsonData ={
     title:schemaData.title,
