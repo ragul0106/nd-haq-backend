@@ -369,7 +369,7 @@ async downloadImageToServer(imageUrl: string): Promise<string> {
     let saveFolder = 'images';
      let filename = imageUrl.split('/').pop()?.split('?')[0] || 'default.jpg';
      let presignedUrl = imageUrl;
-    let baseUrl = process.env.BASE_URL ?? 'http://localhost:3000';
+    let baseUrl = process.env.BASE_URL ?? 'https://api-attest-uat.haqdarshak.com';
     const dir = path.resolve(__dirname, '..', '..', 'public', saveFolder);
 
 
