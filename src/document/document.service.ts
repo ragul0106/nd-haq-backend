@@ -211,7 +211,8 @@ export class DocumentService {
                 document.documentStatus = DocumentStatus.AttesterRework;
             }
 
-
+            console.log(document.digitizedData, "document.digitizedData");
+            
             return await document.save();
         } catch (error) {
              console.log(error);
