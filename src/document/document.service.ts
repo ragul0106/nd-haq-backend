@@ -28,12 +28,6 @@ export class DocumentService {
 
     async createDocument(createDto: Partial<DocumentTemplateType>): Promise<DocumentTemplateType> {
         try {
-            const { name, documentType } = createDto;
-
-            const existing = await this.documentModel.findOne({ name, documentType, isActive: true });
-            if (existing) {
-                throw new ConflictException('Document with this name already exists');
-            }
             if(createDto.imageUrl){
                 createDto.imageUrl = await this.downloadImageToServer(createDto.imageUrl)
             }
