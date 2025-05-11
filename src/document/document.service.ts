@@ -199,7 +199,9 @@ export class DocumentService {
                 accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
                 document.documentStatus = DocumentStatus.AttesterVerified;
                 digitizeData.documentObjectID = document._id
-                 await this.walletService.addCredential(accountData.userDetails.did, document.VcId, document.VcId, accountData.token)
+              let addedCreds =   await this.walletService.addCredential(accountData.userDetails.did, document.VcId, document.VcId, accountData.token)
+              console.log(addedCreds, "addedCreds");
+              
                  await this.walletService.callAgenAppAPI(document.caseId, 7)              
 
 
