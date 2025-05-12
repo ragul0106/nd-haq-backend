@@ -188,8 +188,8 @@ export class DocumentService {
                     throw new NotFoundException('Error in issuing VC');
                 }
                 document.VcId = walletServiceData.identifier; // Assuming walletServiceData is a string, directly assign it
-                document.verifiableCredentials= walletServiceData.vc;
-                document.credentialId = walletServiceData.vc.id;
+                document.verifiableCredentials= walletServiceData?.vc;
+                document.credentialId = walletServiceData?.vc?.id;
 
             } else if (digitizeData.digitizationStatus == 'saved') {
                 document.documentStatus = DocumentStatus.MakerSaved;
