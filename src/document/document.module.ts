@@ -6,10 +6,12 @@ import { DocumentTemplateSchema } from './document.schema';
 import { TemplateFieldSchema } from 'src/document-fields/document-fields.schema';
 import { WalletModule } from '../wallet/wallet.module';
 import { SchemaModule } from 'src/schema/schema.module';
+import { CredentialsModule } from 'src/credentials/credentials.module';
+
 @Module({
   imports: [
       MongooseModule.forFeature([{ name: 'DocumentTemplate', schema: DocumentTemplateSchema }, { name: 'TemplateField', schema: TemplateFieldSchema },]),
-      WalletModule,SchemaModule,
+      WalletModule,SchemaModule,CredentialsModule
     ],
     exports: [MongooseModule,DocumentModule,DocumentService], // <-- this line is key!
   controllers: [DocumentController],

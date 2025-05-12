@@ -12,6 +12,7 @@ import { DocumentTemplate, DocumentTemplateType, DocumentStatus } from './docume
 import { WalletService } from '../wallet/wallet.service';
 import { DocumentComment } from './comment.schema';
 import { SchemaService } from 'src/schema/schema.service';
+import { CredentialsService } from 'src/credentials/credentials.service';
 import * as fs from 'fs';
 import * as path from 'path';
 import axios from 'axios';
@@ -22,7 +23,8 @@ export class DocumentService {
         @InjectModel(DocumentTemplate.name)
         private readonly documentModel: Model<DocumentTemplateType>,
         private readonly walletService: WalletService,
-        private readonly schemaService: SchemaService // This is the missing dependency
+        private readonly schemaService: SchemaService ,
+        private readonly credentialsService: CredentialsService
  
     ) { }
 
@@ -202,6 +204,10 @@ export class DocumentService {
                 digitizeData.documentObjectID = document._id
               let addedCreds =   await this.walletService.addCredential(accountData.userDetails.did, document.VcId, document.verifiableCredentials, accountData.token)
                 await this.walletService.updateWalletUserToken(document.personID, accountData.token)
+                if(addedCreds.success){
+                                    const credentials = await this.walletService.getCredentials(accountData.token);
+                             await  this.credentialsService.saveCredentials(document.personID, credentials[credentials.length - 1]);  
+                }
               
               if (addedCreds?.error) {
                     throw new NotFoundException('Error in adding credential');
@@ -222,9 +228,8 @@ export class DocumentService {
 
              
             return await document.save();
-        } catch (error) {
-             console.log(error);
-             
+        } catch (error) {             
+            console.log(error);
             if (error instanceof HttpException) throw error;
             throw new InternalServerErrorException('Error digitizing document');
         }
@@ -272,6 +277,8 @@ export class DocumentService {
             }
             return filteredDocuments;
         } catch (error) {
+          
+            
             if (error instanceof HttpException) throw error;
             throw new InternalServerErrorException('Error fetching documents by role');
         }
@@ -326,7 +333,6 @@ export class DocumentService {
              
             // document.comments = document.comments.map((comment: DocumentComment) => {
             //     const user = comment.userId as any; // Ensure userId is populated
-            //     console.log(user, "document.comments");
             //     return {
             //         ...comment,
             //         userDetails: {
@@ -423,14 +429,8 @@ async downloadImageToServer(imageUrl: string): Promise<string> {
 }
 async getVerifiableCredential(credentialId: string): Promise<any> {
     try {
-        const document = await this.documentModel.findOne({ credentialId }).exec();
-         
-        if (!document) {
-            return {}
-        }
-        if(document.credentialId){
-            return document.verifiableCredentials
-        }
+       const credential = await this.credentialsService.getCredentialsByCredentialId(credentialId);
+       return credential;
     } catch (error) {
         if (error instanceof HttpException) throw error;    
         return {}

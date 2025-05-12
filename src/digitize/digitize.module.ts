@@ -7,13 +7,16 @@ import { DocumentModule } from '../document/document.module';
 import { DigitizeSchema } from './digitize.schema';
 import { DocumentService } from '../document/document.service'; // Import DocumentService
 import {SchemaModule } from 'src/schema/schema.module';
+import { CredentialsModule } from 'src/credentials/credentials.module';
+
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'Digitize', schema: DigitizeSchema }]),
     WalletModule,  // Import WalletService
     DocumentModule,  // Import DocumentService if needed
-    SchemaModule
+    SchemaModule,
+    CredentialsModule
   ],
   controllers: [DigitizeController],
   providers: [DigitizeService,DocumentService],
