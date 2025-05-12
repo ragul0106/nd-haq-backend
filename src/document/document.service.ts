@@ -214,9 +214,9 @@ export class DocumentService {
 
 
             } else if (digitizeData.digitizationStatus == 'attesterReject') {
-                document.documentStatus = DocumentStatus.AttesterRejected;
+                document.documentStatus = DocumentStatus.MakerPending;
             } else if (digitizeData.digitizationStatus == 'attesterReword') {
-                document.documentStatus = DocumentStatus.AttesterRework;
+                document.documentStatus = DocumentStatus.MakerPending;
             }
 
              
