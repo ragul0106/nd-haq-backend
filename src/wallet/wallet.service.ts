@@ -46,9 +46,12 @@ export class WalletService {
           const accountData = await this.seedUser(walletData.personName, walletData.documentObjectID.accountId);
            if(accountData?.token) {
             const credentials = await this.getCredentials(accountData.token);
+            credentials.forEach((credential: any) => {
+              credential.token = accountData?.token;
+            });
+
              return credentials;
-          }  
-          
+          }   
         }  
       }  
 
@@ -233,7 +236,7 @@ export class WalletService {
      let personId='PERSON_11111';
       const walletData = await this.walletModel.find({ personId }).exec();
 
-      return walletData;
+      return [walletData];
     } catch (error) {
 
       return []; // Return an empty array in case of an error
@@ -279,5 +282,17 @@ export class WalletService {
     } catch (error) {
       return []; // Return an empty array in case of an error
     }
+  }
+  async updateWalletUserToken(personId: string, token: string): Promise<Wallet | undefined> {
+    try {
+      const walletData = await this.walletModel.findOne({ personId }).exec();
+      if (walletData !== null) {
+        walletData.accountToken = token;
+        return walletData.save();
+      }
+    } catch (error) {
+      console.error('Error updating wallet user token:', error);
+    }
+    return undefined; // Ensure a return value in all code paths
   }
 }

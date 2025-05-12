@@ -123,6 +123,8 @@ import { SchemaModel } from 'src/schema/schema.schema';
 
     @Prop()
     credentialId: string;
+    @Prop()
+    tokenId: string;
 
   }
 

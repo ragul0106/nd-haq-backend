@@ -201,13 +201,14 @@ export class DocumentService {
                 document.documentStatus = DocumentStatus.AttesterVerified;
                 digitizeData.documentObjectID = document._id
               let addedCreds =   await this.walletService.addCredential(accountData.userDetails.did, document.VcId, document.verifiableCredentials, accountData.token)
+                await this.walletService.updateWalletUserToken(document.personID, accountData.token)
               
               if (addedCreds?.error) {
                     throw new NotFoundException('Error in adding credential');
                 }else{
                     document.did = accountData.userDetails.did  
                     document.credentialId = addedCreds?.identifier
-                      document.credentialData = addedCreds
+                    document.credentialData = addedCreds
                 }
               
                  await this.walletService.callAgenAppAPI(document.caseId, 7)              
@@ -308,11 +309,18 @@ export class DocumentService {
 
             const document = await this.documentModel.findOne({ documentId, isActive: true }).populate('comments.userId', 'userId name email mobileNumber role').exec();
             if (!document) {
-                throw new NotFoundException('Document not found');
+                return {
+                    message: 'Document not found',
+                    data: []
+                }
             }
             //need to add role in comment
             if (!document.comments || document.comments.length === 0) {
-                throw new NotFoundException('No comments found for this document');
+
+                return {
+                    message: 'No comments found',
+                    data: []
+                }
             } 
             const userIds = document.comments.map(c => c.userId);
              

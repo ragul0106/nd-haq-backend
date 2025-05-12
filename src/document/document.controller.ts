@@ -96,10 +96,7 @@ import { CreateDocumentDto, UpdateDocumentDto } from './document.dto';
        let data = await this.documentServices.getVerifiableCredential(id)
       if(!data){
         return res.status(404).json({ error: 'Document not found' });
-      }      
-      
-        data = data.credentialSubject;
-    
+      }          
       return res.json(data);
 
        

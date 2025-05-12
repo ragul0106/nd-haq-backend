@@ -48,6 +48,9 @@ export class Wallet {
  documentObjectID:Types.ObjectId | DocumentTemplate;
  @Prop()
  identifier:string
+
+ @Prop()
+ accountToken:string
 }
 
  
