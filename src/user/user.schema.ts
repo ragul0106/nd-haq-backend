@@ -51,7 +51,7 @@ export class User {
   @Prop()
   designation: string;
   @Prop()
-  organization: string;
+  organisation: string;
 
 }
 

@@ -189,6 +189,7 @@ export class DocumentService {
                 }
                 document.VcId = walletServiceData.identifier; // Assuming walletServiceData is a string, directly assign it
                 document.verifiableCredentials= walletServiceData.vc;
+                document.credentialId = walletServiceData.vc.id;
 
             } else if (digitizeData.digitizationStatus == 'saved') {
                 document.documentStatus = DocumentStatus.MakerSaved;
@@ -308,28 +309,20 @@ export class DocumentService {
 
             const document = await this.documentModel.findOne({ documentId, isActive: true }).populate('comments.userId', 'userId name email mobileNumber role').exec();
             if (!document) {
-                throw new NotFoundException('Document not found');
+                return {
+                    message: 'Document not found',
+                    data: []
+                }
             }
             //need to add role in comment
             if (!document.comments || document.comments.length === 0) {
-                throw new NotFoundException('No comments found for this document');
+                return {
+                    message: 'Document not found',
+                    data: []
+                }
             } 
             const userIds = document.comments.map(c => c.userId);
-             
-            // document.comments = document.comments.map((comment: DocumentComment) => {
-            //     const user = comment.userId as any; // Ensure userId is populated
-            //     console.log(user, "document.comments");
-            //     return {
-            //         ...comment,
-            //         userDetails: {
-            //             userId: user.userId,
-            //             name: user.name,
-            //             email: user.email,
-            //             mobileNumber: user.mobileNumber,
-            //             role: user.role
-            //         }
-            //     };
-            // });
+        
             return document.comments;
         } catch (error) {
             if (error instanceof HttpException) throw error;
@@ -415,18 +408,17 @@ async downloadImageToServer(imageUrl: string): Promise<string> {
 }
 async getVerifiableCredential(credentialId: string): Promise<any> {
     try {
-        const document = await this.documentModel.findOne({ credentialId, isActive: true }).exec();
-        console.log(credentialId);
+        const document = await this.documentModel.findOne({ credentialId }).exec();
         
         if (!document) {
-            throw new NotFoundException('Document not found');
+            return {}
         }
         if(document.credentialId){
-            return document.credentialData
+            return document.verifiableCredentials
         }
     } catch (error) {
         if (error instanceof HttpException) throw error;    
-        throw new InternalServerErrorException('Error fetching verifiable credential');
+        return {}
     }
 }
 

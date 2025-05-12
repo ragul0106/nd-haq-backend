@@ -92,24 +92,24 @@ import { CreateDocumentDto, UpdateDocumentDto } from './document.dto';
     }
 
     @Get('view/:id.json')
-    getJson(@Param('id') id: string, @Res() res: Response) {
-      const data = {
-        id,
-        title: `Document ${id}`,
-        content: 'Random content here...',
-        createdAt: new Date().toISOString(),
-      };
+    async getJson(@Param('id') id: string, @Res() res: Response) {  
+       let data = await this.documentServices.getVerifiableCredential(id)
+      if(!data){
+        return res.status(404).json({ error: 'Document not found' });
+      }      
+      
+        data = data.credentialSubject;
+    
+      return res.json(data);
+
        
     }
     @Get('view/:id.vc')
-    getVC(@Param('id') id: string, @Res() res: Response) {
-      const data = {
-        id,
-        title: `Document ${id}`,
-        content: 'Random content here...',
-        createdAt: new Date().toISOString(),
-      };
-  
+    async getVC(@Param('id') id: string, @Res() res: Response) {
+      let data = await this.documentServices.getVerifiableCredential(id)
+      if(!data){
+        return res.status(404).json({ error: 'Document not found' });
+      }      
       return res.json(data);
     }
  
