@@ -316,18 +316,11 @@ export class DocumentService {
 
             const document = await this.documentModel.findOne({ documentId, isActive: true }).populate('comments.userId', 'userId name email mobileNumber role').exec();
             if (!document) {
-                return {
-                    message: 'Document not found',
-                    data: []
-                }
+                throw new NotFoundException('Document not found');
             }
-            //need to add role in comment
-            if (!document.comments || document.comments.length === 0) {
+             if (!document.comments || document.comments.length === 0) {
 
-                return {
-                    message: 'No comments found',
-                    data: []
-                }
+                throw new NotFoundException('No comments found for this document');
             } 
             const userIds = document.comments.map(c => c.userId);
              
