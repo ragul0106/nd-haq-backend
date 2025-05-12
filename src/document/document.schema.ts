@@ -117,6 +117,13 @@ import { SchemaModel } from 'src/schema/schema.schema';
 
     @Prop({ type: Object })
     verifiableCredentials: object
+
+    @Prop({ type: Object })
+    credentialData: object
+
+    @Prop()
+    credentialId: string;
+
   }
 
   export type DocumentTemplateType = DocumentTemplate & Document;

@@ -48,6 +48,11 @@ export class User {
 
   @Prop()
   accountCreationReason: string;
+  @Prop()
+  designation: string;
+  @Prop()
+  organization: string;
+
 }
 
 export type UserDocument = User & Document;

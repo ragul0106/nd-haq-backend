@@ -184,7 +184,9 @@ export class DocumentService {
                
                 let test_cert_data = digitizeData.jsonData
                 let walletServiceData = await this.walletService.issueVc(schemaData?.DhiwaySchemaId, test_cert_data)
-        
+                if (walletServiceData?.error) {
+                    throw new NotFoundException('Error in issuing VC');
+                }
                 document.VcId = walletServiceData.identifier; // Assuming walletServiceData is a string, directly assign it
                 document.verifiableCredentials= walletServiceData.vc;
 
@@ -198,6 +200,15 @@ export class DocumentService {
                 document.documentStatus = DocumentStatus.AttesterVerified;
                 digitizeData.documentObjectID = document._id
               let addedCreds =   await this.walletService.addCredential(accountData.userDetails.did, document.VcId, document.verifiableCredentials, accountData.token)
+              console.log(addedCreds, "addedCreds");
+              
+              if (addedCreds?.error) {
+                    throw new NotFoundException('Error in adding credential');
+                }else{
+                    document.did = accountData.userDetails.did  
+                    document.credentialId = addedCreds?.identifier
+                      document.credentialData = addedCreds
+                }
               
                  await this.walletService.callAgenAppAPI(document.caseId, 7)              
 
@@ -401,6 +412,22 @@ async downloadImageToServer(imageUrl: string): Promise<string> {
   } catch (error) {
     throw new Error(`Failed to download image from presigned URL: ${error.message}`);
   }
+}
+async getVerifiableCredential(credentialId: string): Promise<any> {
+    try {
+        const document = await this.documentModel.findOne({ credentialId, isActive: true }).exec();
+        console.log(credentialId);
+        
+        if (!document) {
+            throw new NotFoundException('Document not found');
+        }
+        if(document.credentialId){
+            return document.credentialData
+        }
+    } catch (error) {
+        if (error instanceof HttpException) throw error;    
+        throw new InternalServerErrorException('Error fetching verifiable credential');
+    }
 }
 
 }

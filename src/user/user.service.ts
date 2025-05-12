@@ -32,7 +32,7 @@ export class UserService {
                 
             }
 
-            const user = new this.userModel({ email, isActive: true, isApproved: false, registerSentence, userId: uuidv4() ,name:createUserDto.name ,accountCreationReason:createUserDto.accountCreationReason });
+            const user = new this.userModel({ email, isActive: true, isApproved: false, registerSentence, userId: uuidv4() ,name:createUserDto.name ,accountCreationReason:createUserDto.accountCreationReason,designation:createUserDto.designation,organization:createUserDto.organization });
             return user.save();
         } catch (error) {
             if (error instanceof HttpException) {

@@ -8,8 +8,10 @@ import {
     Post,
     Put,
     Query,
-    UseGuards,
-  } from '@nestjs/common';
+      UseGuards,
+      Res
+    } from '@nestjs/common';
+  import { Response } from 'express';
   import { DocumentService } from './document.service';
 import { JwtAuthGuard } from 'src/user/jwt-auth.guard';
 import { CreateDocumentDto, UpdateDocumentDto } from './document.dto';
@@ -88,6 +90,28 @@ import { CreateDocumentDto, UpdateDocumentDto } from './document.dto';
       const data = await this.documentServices.getDocumentByUser(userId);
       return { message: 'Documents fetched successfully', data };
     }
-    
+
+    @Get('view/:id.json')
+    getJson(@Param('id') id: string, @Res() res: Response) {
+      const data = {
+        id,
+        title: `Document ${id}`,
+        content: 'Random content here...',
+        createdAt: new Date().toISOString(),
+      };
+       
+    }
+    @Get('view/:id.vc')
+    getVC(@Param('id') id: string, @Res() res: Response) {
+      const data = {
+        id,
+        title: `Document ${id}`,
+        content: 'Random content here...',
+        createdAt: new Date().toISOString(),
+      };
+  
+      return res.json(data);
+    }
+ 
   }
   
