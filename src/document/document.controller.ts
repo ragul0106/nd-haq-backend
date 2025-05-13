@@ -109,6 +109,17 @@ import { CreateDocumentDto, UpdateDocumentDto } from './document.dto';
       }      
       return res.json(data);
     }
+    
  
+    @Get('/view/:id')
+    async getCredentials(@Param('id') id: string) {
+      let data = await this.documentServices.getVerifiableCredential(id)
+      if(!data){
+        return { message: 'failed', data:[] };
+      }      
+      console.log(data);
+      
+       return { message: 'success', data };
+    }
   }
   
