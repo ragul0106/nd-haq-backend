@@ -66,9 +66,9 @@ import * as QRCode from 'qrcode';
       return { message: 'Documents fetched successfully', data };
     }
 
-    @Get('/read/documentByRole/:role/:attestorId')
-    async getDocumentByRole(@Param('role') role: string,@Param('attestorId') attestorId: string) {
-      const data = await this.documentServices.getDocumentByRole(role,attestorId);
+    @Get('/read/documentByRole/:role/')
+    async getDocumentByRole(@Param('role') role: string) {
+      const data = await this.documentServices.getDocumentByRole(role);
       return { message: 'Documents fetched successfully', data };
     }
     @Put('/addComments/:id')
@@ -92,29 +92,26 @@ import * as QRCode from 'qrcode';
       return { message: 'Documents fetched successfully', data };
     }
 
-    @Get('view/:id.json')
-    async getJson(@Param('id') id: string, @Res() res: Response) {  
-      console.log(1);
-      
-       let data = await this.documentServices.getVerifiableCredential(id)
-      if(!data){
-        return res.status(404).json({ error: 'Document not found' });
-      }          
-      console.log('data',data)
-      return res.json(JSON.parse(data.credentials.credentialVC));
+    // @Get('view/:id.json')
+    // async getJson(@Param('id') id: string, @Res() res: Response) {        
+    //    let data = await this.documentServices.getVerifiableCredential(id)
+    //   if(!data){
+    //     return res.status(404).json({ error: 'Document not found' });
+    //   }          
+    //   console.log('data',data)
+    //   return res.json(JSON.parse(data.credentials.credentialVC));
 
        
-    }
-    @Get('view/:id.vc')
-    async getVC(@Param('id') id: string, @Res() res: Response) {
-      console.log(2);
-      let data = await this.documentServices.getVerifiableCredential(id)
-      if(!data){
-        return res.status(404).json({ error: 'Document not found' });
-      }      
+    // }
+    // @Get('view/:id.vc')
+    // async getVC(@Param('id') id: string, @Res() res: Response) {
+    //   let data = await this.documentServices.getVerifiableCredential(id)
+    //   if(!data){
+    //     return res.status(404).json({ error: 'Document not found' });
+    //   }      
        
-      return res.json(JSON.parse(data.credentials.credentialVC));
-     }
+    //   return res.json(JSON.parse(data.credentials.credentialVC));
+    //  }
     
  
     @Get('/view/:id')
