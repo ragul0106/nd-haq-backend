@@ -122,7 +122,7 @@ import * as QRCode from 'qrcode';
       if(!data){
         return { message: 'failed', data:[] };
       }      
-       return { message: 'success', data };
+       return { message: 'success', data,'QR':qrDataUrl };
     }
   }
   
