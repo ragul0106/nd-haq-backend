@@ -98,7 +98,8 @@ import * as QRCode from 'qrcode';
       if(!data){
         return res.status(404).json({ error: 'Document not found' });
       }          
-      return res.json(data.credentials.credentialVC);
+      console.log('data',data.credentials.credentialVC)
+      return res.json(JSON.parse(data.credentials.credentialVC));
 
        
     }
@@ -109,8 +110,8 @@ import * as QRCode from 'qrcode';
         return res.status(404).json({ error: 'Document not found' });
       }      
        
-      return res.json(data.credentials.credentialVC);
-    }
+      return res.json(JSON.parse(data.credentials.credentialVC));
+     }
     
  
     @Get('/view/:id')
