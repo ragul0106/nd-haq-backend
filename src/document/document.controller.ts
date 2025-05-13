@@ -66,9 +66,9 @@ import * as QRCode from 'qrcode';
       return { message: 'Documents fetched successfully', data };
     }
 
-    @Get('/read/documentByRole/:role')
-    async getDocumentByRole(@Param('role') role: string) {
-      const data = await this.documentServices.getDocumentByRole(role);
+    @Get('/read/documentByRole/:role/:attestorId')
+    async getDocumentByRole(@Param('role') role: string,@Param('attestorId') attestorId: string) {
+      const data = await this.documentServices.getDocumentByRole(role,attestorId);
       return { message: 'Documents fetched successfully', data };
     }
     @Put('/addComments/:id')
@@ -119,8 +119,11 @@ import * as QRCode from 'qrcode';
  
     @Get('/view/:id')
     async getCredentials(@Param('id') id: string) {
-      console.log(3);
-      let embedURl=`https://attest-uat.haqdarshak.com/document/view/${id}`
+      console.log(process.env.API_ENDPOINT,":process.env.BASE_URL");
+      
+      let embedURl=`${process.env.API_ENDPOINT}/document/view/${id}`
+      console.log(embedURl,":embedURl");
+      
       const qrDataUrl = await QRCode.toDataURL(embedURl || 'Default QR Text');
       let data = await this.documentServices.getVerifiableCredential(id)
       if(!data){
