@@ -29,6 +29,8 @@ export class CredentialsService {
 
   async getCredentialsByCredentialId(credentialId: string): Promise<string | null> {
     const returnData = await this.credentialModel.findOne({ credentialId }).exec();
+    console.log('returnData', returnData);
+    
     return (returnData?.credentials as { credentialVC?: string })?.credentialVC || null;
   }
 }
