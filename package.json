@@ -34,6 +34,7 @@
     "lodash": "^4.17.21",
     "mongoose": "^8.13.2",
     "nest": "^0.1.6",
+    "qrcode": "^1.5.4",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "uuid": "^11.1.0"

@@ -15,6 +15,7 @@ import {
   import { DocumentService } from './document.service';
 import { JwtAuthGuard } from 'src/user/jwt-auth.guard';
 import { CreateDocumentDto, UpdateDocumentDto } from './document.dto';
+import * as QRCode from 'qrcode';
   
   @Controller('document')
   export class DocumentController {
@@ -97,7 +98,7 @@ import { CreateDocumentDto, UpdateDocumentDto } from './document.dto';
       if(!data){
         return res.status(404).json({ error: 'Document not found' });
       }          
-      return res.json(data);
+      return res.json(data.credentials.credentialVC);
 
        
     }
@@ -107,18 +108,19 @@ import { CreateDocumentDto, UpdateDocumentDto } from './document.dto';
       if(!data){
         return res.status(404).json({ error: 'Document not found' });
       }      
-      return res.json(data);
+       
+      return res.json(data.credentials.credentialVC);
     }
     
  
     @Get('/view/:id')
     async getCredentials(@Param('id') id: string) {
+      let embedURl=`https://attest-uat.haqdarshak.com/document/view/${id}`
+      const qrDataUrl = await QRCode.toDataURL(embedURl || 'Default QR Text');
       let data = await this.documentServices.getVerifiableCredential(id)
       if(!data){
         return { message: 'failed', data:[] };
       }      
-      console.log(data);
-      
        return { message: 'success', data };
     }
   }
