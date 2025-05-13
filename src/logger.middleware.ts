@@ -10,7 +10,6 @@ export class LoggerMiddleware implements NestMiddleware {
     console.log('Query:', req.query);
     //log current time
     console.log('Current Time:', new Date().toISOString());
-    console.log('Body:', body);
 
     next();
   }

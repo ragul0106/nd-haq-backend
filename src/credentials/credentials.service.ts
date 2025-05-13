@@ -27,10 +27,12 @@ export class CredentialsService {
     return await this.credentialModel.findOne({ credentialId }).exec();
   }
 
-  async getCredentialsByCredentialId(credentialId: string): Promise<string | null> {
-    const returnData = await this.credentialModel.findOne({ credentialId }).exec();
-    console.log('returnData', returnData);
-    
-    return (returnData?.credentials as { credentialVC?: string })?.credentialVC || null;
+  async getCredentialsByCredentialId(credentialId: string): Promise<any> {
+   try {
+    const returnData = await this.credentialModel.findOne({ credentialId }).exec();     
+   return returnData
+   } catch (error) {
+    return null;
+   }
   }
 }
