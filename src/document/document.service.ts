@@ -423,7 +423,7 @@ async downloadImageToServer(imageUrl: string): Promise<string> {
 }
 async getVerifiableCredential(credentialId: string): Promise<any> {
     try {
-       const credential = await this.credentialsService.getCredentialsByCredentialId(credentialId);
+       const credential = await this.credentialsService.getCredentialsByCredentialForOther(credentialId);
        return credential;
     } catch (error) {
         if (error instanceof HttpException) throw error;    
