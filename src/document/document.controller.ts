@@ -94,6 +94,8 @@ import * as QRCode from 'qrcode';
 
     @Get('view/:id.json')
     async getJson(@Param('id') id: string, @Res() res: Response) {  
+      console.log(1);
+      
        let data = await this.documentServices.getVerifiableCredential(id)
       if(!data){
         return res.status(404).json({ error: 'Document not found' });
@@ -105,6 +107,7 @@ import * as QRCode from 'qrcode';
     }
     @Get('view/:id.vc')
     async getVC(@Param('id') id: string, @Res() res: Response) {
+      console.log(2);
       let data = await this.documentServices.getVerifiableCredential(id)
       if(!data){
         return res.status(404).json({ error: 'Document not found' });
@@ -116,6 +119,7 @@ import * as QRCode from 'qrcode';
  
     @Get('/view/:id')
     async getCredentials(@Param('id') id: string) {
+      console.log(3);
       let embedURl=`https://attest-uat.haqdarshak.com/document/view/${id}`
       const qrDataUrl = await QRCode.toDataURL(embedURl || 'Default QR Text');
       let data = await this.documentServices.getVerifiableCredential(id)
