@@ -92,7 +92,7 @@ import * as QRCode from 'qrcode';
       return { message: 'Documents fetched successfully', data };
     }
 
-    @Get('view/:id.json')
+    @Get('/view/:id.json')
     async getJson(@Param('id') id: string, @Res() res: Response) {        
        let data = await this.documentServices.getVerifiableCredential(id)
       if(!data){
@@ -103,7 +103,7 @@ import * as QRCode from 'qrcode';
 
        
     }
-    @Get('view/:id.vc')
+    @Get('/view/:id.vc')
     async getVC(@Param('id') id: string, @Res() res: Response) {
       let data = await this.documentServices.getVerifiableCredential(id)
       if(!data){
@@ -114,7 +114,7 @@ import * as QRCode from 'qrcode';
      }
     
  
-    @Get('view/:id')
+    @Get('/view/:id')
   async getCredentials(@Param('id') id: string, @Res() res: Response) {
     console.log('Requested ID:', id);
 
