@@ -116,6 +116,7 @@ import * as QRCode from 'qrcode';
  
     @Get('view/:id')
   async getCredentials(@Param('id') id: string, @Res() res: Response) {
+    console.log('Requested ID:', id);
 
     // Determine if request is for .json or .vc version
     const isJson = id.endsWith('.json');
