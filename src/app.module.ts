@@ -10,10 +10,13 @@ import { SchemaModule } from './schema/schema.module';
 import { WalletModule } from './wallet/wallet.module';
 import { DigitizeModule } from './digitize/digitize.module';
 import { CredentialsModule } from './credentials/credentials.module';
+import { ConfigModule } from '@nestjs/config';
  
 @Module({
   imports: [MongooseModule.forRoot('mongodb://localhost:27017/hq-attestation'), UserModule, RoleModule, DocumentModule,DocumentFieldsModule, SchemaModule, WalletModule, DigitizeModule, CredentialsModule
-  ],
+   , ConfigModule.forRoot({
+      isGlobal: true, // makes config available app-wide
+    }),  ],
   providers: [RoleSeeder, SeederService],
  
 })

@@ -125,6 +125,8 @@ import { SchemaModel } from 'src/schema/schema.schema';
     credentialId: string;
     @Prop()
     tokenId: string;
+    @Prop()
+    attesterId: string;
 
   }
 

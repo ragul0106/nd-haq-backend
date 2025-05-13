@@ -137,6 +137,7 @@ export class DocumentService {
             }
             let accountData;
             document.isApproved = true;
+            document.attesterId = digitizeData.attesterId;
         
 
             if (digitizeData.digitizationStatus == 'digitise') {
@@ -253,10 +254,10 @@ export class DocumentService {
             throw new InternalServerErrorException('Error fetching documents by status');
         }
     }
-    async getDocumentByRole(role: string): Promise<DocumentTemplateType[]> {
+    async getDocumentByRole(role: string, attesterId: string): Promise<DocumentTemplateType[]> {
         try {
             const documents = await this.documentModel
-                .find({ isActive: true })
+                .find({ isActive: true,attesterId })
                 .populate('fields')
                 .populate('createdBy')
                 .populate('updatedBy')
@@ -382,7 +383,7 @@ async downloadImageToServer(imageUrl: string): Promise<string> {
     let saveFolder = 'images';
      let filename = imageUrl.split('/').pop()?.split('?')[0] || 'default.jpg';
      let presignedUrl = imageUrl;
-    let baseUrl = process.env.BASE_URL ?? 'https://api-attest-uat.haqdarshak.com';
+    let baseUrl = process.env.API_ENDPOINT;
     const dir = path.resolve(__dirname, '..', '..', 'public', saveFolder);
 
 
