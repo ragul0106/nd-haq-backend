@@ -254,10 +254,10 @@ export class DocumentService {
             throw new InternalServerErrorException('Error fetching documents by status');
         }
     }
-    async getDocumentByRole(role: string, attesterId: string): Promise<DocumentTemplateType[]> {
+    async getDocumentByRole(role: string): Promise<DocumentTemplateType[]> {
         try {
             const documents = await this.documentModel
-                .find({ isActive: true,attesterId })
+                .find({ isActive: true })
                 .populate('fields')
                 .populate('createdBy')
                 .populate('updatedBy')
