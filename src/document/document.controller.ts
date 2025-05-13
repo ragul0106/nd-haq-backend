@@ -98,7 +98,7 @@ import * as QRCode from 'qrcode';
       if(!data){
         return res.status(404).json({ error: 'Document not found' });
       }          
-      console.log('data',data.credentials.credentialVC)
+      console.log('data',data)
       return res.json(JSON.parse(data.credentials.credentialVC));
 
        
