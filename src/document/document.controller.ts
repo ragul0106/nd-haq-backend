@@ -114,18 +114,50 @@ import * as QRCode from 'qrcode';
     //  }
     
  
-    @Get('/view/:id')
-    async getCredentials(@Param('id') id: string) {
+    @Get('view/:id')
+  async getCredentials(@Param('id') id: string, @Res() res: Response) {
 
-      console.log('view/id',id);
-      let embedURl=`${process.env.API_ENDPOINT}/document/view/${id}`
-      
-      const qrDataUrl = await QRCode.toDataURL(embedURl || 'Default QR Text');
-      let data = await this.documentServices.getVerifiableCredential(id)
-      if(!data){
-        return { message: 'failed', data:[] };
-      }      
-       return { message: 'success', data,'QR':qrDataUrl };
+    // Determine if request is for .json or .vc version
+    const isJson = id.endsWith('.json');
+    const isVc = id.endsWith('.vc');
+
+    // Remove extension if needed to get actual DB ID
+    const lookupId = isJson || isVc ? id.replace(/\.(json|vc)$/i, '') : id;
+
+    const data = await this.documentServices.getVerifiableCredential(lookupId);
+    if (!data) {
+      return res.status(404).json({ message: 'Document not found', data: [] });
     }
+
+    // Return only the VC JSON if .json or .vc
+    if (isJson || isVc) {
+      try {
+        const vcData = JSON.parse(data.credentials.credentialVC);
+        return res.json(vcData);
+      } catch (error) {
+        console.error('Error parsing credentialVC:', error);
+        return res.status(500).json({ message: 'Invalid VC format' });
+      }
+    }
+
+    // Otherwise return full original-style response (old format)
+    try {
+      const embedUrl = `${process.env.API_ENDPOINT}/document/view/${id}`;
+      const qrDataUrl = await QRCode.toDataURL(embedUrl);
+
+      return res.json({
+        result: {
+          data: {
+            message: 'success',
+            data: data,
+            QR: qrDataUrl,
+          },
+        },
+      });
+    } catch (error) {
+      console.error('QR generation error:', error);
+      return res.status(500).json({ message: 'QR generation failed' });
+    }
+  }
   }
   
