@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './utils/interceptor/error.interceptor';
 import { ResponseInterceptor } from './utils/interceptor/response.interceptor';
 import { join } from 'path';
+import { LoggerMiddleware } from './logger.middleware';
 import * as express from 'express';
 
 async function bootstrap() {
@@ -20,6 +21,7 @@ async function bootstrap() {
   //error handler
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.use('/images', express.static(join(__dirname, '..', 'public', 'images')));
+  app.use(new LoggerMiddleware().use);
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
