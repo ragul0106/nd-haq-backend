@@ -133,7 +133,7 @@ import * as QRCode from 'qrcode';
     // Return only the VC JSON if .json or .vc
     if (isJson || isVc) {
       try {
-        const vcData = JSON.parse(data.credentials.credentialVC);
+        const vcData = JSON.parse(data);
         return res.json(vcData);
       } catch (error) {
         console.error('Error parsing credentialVC:', error);
@@ -145,12 +145,12 @@ import * as QRCode from 'qrcode';
     try {
       const embedUrl = `${process.env.API_ENDPOINT}/document/view/${id}`;
       const qrDataUrl = await QRCode.toDataURL(embedUrl);
-
+      let newData = await this.documentServices.getVerifiableCredentialById(id);
       return res.json({
         result: {
           data: {
             message: 'success',
-            data: data,
+            data: newData,
             QR: qrDataUrl,
           },
         },
