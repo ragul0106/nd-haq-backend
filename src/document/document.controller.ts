@@ -119,10 +119,9 @@ import * as QRCode from 'qrcode';
  
     @Get('/view/:id')
     async getCredentials(@Param('id') id: string) {
-      console.log(process.env.API_ENDPOINT,":process.env.BASE_URL");
-      
+
+      console.log('view/id',id);
       let embedURl=`${process.env.API_ENDPOINT}/document/view/${id}`
-      console.log(embedURl,":embedURl");
       
       const qrDataUrl = await QRCode.toDataURL(embedURl || 'Default QR Text');
       let data = await this.documentServices.getVerifiableCredential(id)
