@@ -143,9 +143,9 @@ export class DocumentService {
             document.attesterId = digitizeData.attesterId;
             logger.info(JSON.stringify(digitizeData));
 
-
+            document.digitizedData = digitizeData.jsonData;
             if (digitizeData.digitizationStatus == 'digitise') {
-                document.digitizedData = digitizeData.jsonData;
+              
                 let schemaData= await this.schemaService.getById(digitizeData.documentName)
         
                 document.documentStatus = DocumentStatus.MakerCompleted;
