@@ -27,12 +27,15 @@ export class UserService {
                 }else{
                     existingUser.isActive = true;
                     existingUser.isApproved = false;
+                    existingUser.accountCreationReason = createUserDto.accountCreationReason || '';
+                    existingUser.designation = createUserDto.designation || '';
+                    existingUser.organisation = createUserDto.organisation || '';
                     return existingUser.save();
                 }
                 
             }
 
-            const user = new this.userModel({ email, isActive: true, isApproved: false, registerSentence, userId: uuidv4() ,name:createUserDto.name ,accountCreationReason:createUserDto.accountCreationReason,designation:createUserDto.designation,organisation:createUserDto.organisation });
+            const user = new this.userModel({ email, isActive: true, isApproved: false, registerSentence, userId: uuidv4() ,name:createUserDto.name ,accountCreationReason:createUserDto.accountCreationReason || '', designation:createUserDto.designation || '', organisation:createUserDto.organisation || '' });
             return user.save();
         } catch (error) {
             if (error instanceof HttpException) {
