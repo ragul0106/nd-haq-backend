@@ -95,7 +95,7 @@ import * as QRCode from 'qrcode';
 
     @Get('/view/:id.json')
     async getJson(@Param('id') id: string, @Res() res: Response) {        
-       let data = await this.documentServices.getVerifiableCredentialById(id)
+       let data = await this.documentServices.getVerifiableCredential(id)
       if(!data){
         return res.status(404).json({ error: 'Document not found' });
       }          
@@ -105,7 +105,7 @@ import * as QRCode from 'qrcode';
     }
     @Get('/view/:id.vc')
     async getVC(@Param('id') id: string, @Res() res: Response) {
-      let data = await this.documentServices.getVerifiableCredentialById(id)
+      let data = await this.documentServices.getVerifiableCredential(id)
       if(!data){
         return res.status(404).json({ error: 'Document not found' });
       }      
@@ -125,7 +125,7 @@ import * as QRCode from 'qrcode';
     // Remove extension if needed to get actual DB ID
     const lookupId = isJson || isVc ? id.replace(/\.(json|vc)$/i, '') : id;
 
-    const data = await this.documentServices.getVerifiableCredentialById(lookupId);
+    const data = await this.documentServices.getVerifiableCredential(lookupId);
     if (!data) {
       return res.status(404).json({ message: 'Document not found', data: [] });
     }
