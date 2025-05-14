@@ -4,6 +4,8 @@ import { Model } from 'mongoose';
 import { Wallet, WalletDocument, WalletStatus } from './wallet.schema';
 import axios from 'axios';
 import * as dotenv from 'dotenv';
+import { ConfigService } from '@nestjs/config';
+
 dotenv.config();
 
 @Injectable()
@@ -14,7 +16,7 @@ export class WalletService {
   private userToken: string | null = null;
   private name: string | null = null;
   private accountId: string | null = null;
-  constructor(@InjectModel(Wallet.name) private walletModel: Model<WalletDocument>) {}
+  constructor(@InjectModel(Wallet.name) private walletModel: Model<WalletDocument>, private configService: ConfigService) {}
 
   setAppToken(token: string): void {
     this.authToken = token;
@@ -246,11 +248,11 @@ export class WalletService {
   }
   async callAgenAppAPI(episode_id:string,status:number): Promise<any> { 
     console.log("****************");
-    
-    console.log(process.env.API_ENDPOINT_AGENT,"process.env.API_ENDPOINT_AGENT");
+    const apiUrl = this.configService.get<string>('API_ENDPOINT_AGENT');
+    console.log(apiUrl, '✅ Loaded from .env');
     console.log("****************");
     
-    const url = `${process.env.API_ENDPOINT_AGENT}/microservices/AttestWallet/updateEpisodeStatus`;
+    const url = `${apiUrl}/microservices/AttestWallet/updateEpisodeStatus`;
     const headers = {
       'Content-Type': 'application/x-www-form-urlencoded',
       'Cookie': 'PHPSESSID=o8s3jt3ppuge798emkeudourf0',
