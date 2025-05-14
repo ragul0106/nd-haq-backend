@@ -99,7 +99,7 @@ import * as QRCode from 'qrcode';
       if(!data){
         return res.status(404).json({ error: 'Document not found' });
       }          
-       return res.json(JSON.parse(data.credentials.credentialVC));
+       return res.json(JSON.parse(data));
 
        
     }
@@ -110,7 +110,7 @@ import * as QRCode from 'qrcode';
         return res.status(404).json({ error: 'Document not found' });
       }      
        
-      return res.json(JSON.parse(data.credentials.credentialVC));
+      return res.json(JSON.parse(data));
      }
     
  
@@ -133,7 +133,7 @@ import * as QRCode from 'qrcode';
     // Return only the VC JSON if .json or .vc
     if (isJson || isVc) {
       try {
-        const vcData = JSON.parse(data.credentials.credentialVC);
+        const vcData = JSON.parse(data);
          return res.json(vcData);
       } catch (error) {
         console.error('Error parsing credentialVC:', error);
