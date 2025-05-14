@@ -192,7 +192,7 @@ import * as QRCode from 'qrcode';
     // Render HTML page with QR and form
     try {
       const vcData = JSON.parse(data.credentials.credentialVC);
-      const embedUrl = `${process.env.API_ENDPOINT || 'https://attest-uat.haqdarshak.com'}/document/view/${id}`;
+      const embedUrl = `${process.env.API_ENDPOINT || 'https://api-attest-uat.haqdarshak.com'}/document/view/${id}`;
       const qrDataUrl = await QRCode.toDataURL(embedUrl);
       console.log(vcData.credentialSubject);
       
