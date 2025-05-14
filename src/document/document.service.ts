@@ -429,4 +429,23 @@ async getVerifiableCredentialById(credentialId: string): Promise<any> {
         return {}
     }
 }
+async getDocumentByRoleAndAssignedAttester(role: string, assignedAttester: string): Promise<DocumentTemplateType[]> {
+    try { 
+        const documents = await this.documentModel
+            .find({ attesterId: assignedAttester, isActive: true })
+            .populate('fields')
+            .populate('createdBy')
+            .populate('updatedBy')
+            .exec();
+
+        if (!documents || documents.length === 0) {
+            throw new NotFoundException('No documents found for this role and assigned attester');
+        }
+
+        return documents;
+    } catch (error) {
+        if (error instanceof HttpException) throw error;
+        throw new InternalServerErrorException('Error fetching documents by role and assigned attester');
+    }
+}
 }

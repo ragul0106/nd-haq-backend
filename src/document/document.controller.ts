@@ -72,6 +72,12 @@ import * as QRCode from 'qrcode';
       const data = await this.documentServices.getDocumentByRole(role);
       return { message: 'Documents fetched successfully', data };
     }
+
+    @Get('/read/documentByRole/:role/:id')
+    async getDocumentByAssignedID(@Param('role') role: string, @Param('id') id: string) {
+      const data = await this.documentServices.getDocumentByRoleAndAssignedAttester(role, id);
+      return { message: 'Documents fetched successfully', data };
+    }
     @Put('/addComments/:id')
    async addComments(
       @Param('id') id: string,
@@ -193,24 +199,39 @@ import * as QRCode from 'qrcode';
     try {
       const vcData = JSON.parse(data.credentials.credentialVC);
       const embedUrl = `${process.env.API_ENDPOINT || 'https://api-attest-uat.haqdarshak.com'}/document/view/${id}`;
-      const qrDataUrl = await QRCode.toDataURL(embedUrl);
-      console.log(vcData.credentialSubject);
+      const qrDataUrl = await QRCode.toDataURL(embedUrl); 
       
       const formFields = Object.entries(vcData.credentialSubject).map(
-        ([key, value]) => `
+        ([key, value]) => {
+          if (key === '@context') {
+            return '';
+          }
+          return `
           <div class="form-group">
             <label for="${key}">${key}</label>
             <input type="text" id="${key}" name="${key}" value="${value}" readonly />
           </div>
         `
-      ).join('');
+    }).join('');
+    let formFieldsOfOriginalVC = Object.entries(vcData.credentialSchema.properties.originalvc).map(
+      ([key, value]) => {
+        if (key === '@context') {
+          return '';
+        }
+        return `
+        <div class="form-group">
+          <label for="${key}">${key}</label>
+          <input type="text" id="${key}" name="${key}" value="${value}" readonly />
+        </div>
+      `
+      }).join('');
 
       const html = `
         <!DOCTYPE html>
         <html lang="en">
         <head>
           <meta charset="UTF-8">
-          <title>Wallet Dashboard</title>
+          <title>Wallet Credential</title>
           <style>
             body {
               font-family: "Helvetica Neue", sans-serif;
@@ -237,13 +258,13 @@ import * as QRCode from 'qrcode';
             }
 
             .qr-container {
-              flex: 0 0 150px;
+              flex: 0 0 250px;
               margin-right: 40px;
             }
 
             .qr-container img {
-              width: 150px;
-              height: 150px;
+              width: 250px;
+              height: 250px;
               border-radius: 10px;
             }
 
@@ -279,13 +300,14 @@ import * as QRCode from 'qrcode';
           </style>
         </head>
         <body>
-          <div class="header">Wallet Dashboard</div>
-
+          <div class="header">Wallet Credential</div>
+       
           <div class="container">
             <div class="qr-container">
-              <img src="${qrDataUrl}" alt="QR Code" />
+              <img src="${qrDataUrl}" alt="QR Code" height=500 width=50 />
             </div>
             <div class="form-container">
+             <h1> ${vcData.credentialSchema.title.split(":")[0]}</h1>
               ${formFields}
             </div>
           </div>
