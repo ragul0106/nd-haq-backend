@@ -219,7 +219,7 @@ export class DocumentService {
                     document.credentialData = addedCreds
                 }
               
-                 await this.walletService.callAgenAppAPI(document.caseId, 7)              
+                 await this.walletService.callAgenAppAPI(document.caseId, 8)              
 
 
             } else if (digitizeData.digitizationStatus == 'attesterReject') {

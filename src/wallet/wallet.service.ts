@@ -258,7 +258,8 @@ export class WalletService {
 
       return response.data;
     } catch (error) {
-
+      console.log('Error calling AgenAPP API:', error);
+      
       throw new HttpException('Error calling AgenAPP API', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   } 
