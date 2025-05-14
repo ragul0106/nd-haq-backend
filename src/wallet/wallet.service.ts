@@ -247,7 +247,7 @@ export class WalletService {
   async callAgenAppAPI(episode_id:string,status:number): Promise<any> { 
     console.log("****************");
     
-    console.log(process.env,"process.env.API_ENDPOINT_AGENT");
+    console.log(process.env.API_ENDPOINT_AGENT,"process.env.API_ENDPOINT_AGENT");
     console.log("****************");
     
     const url = `${process.env.API_ENDPOINT_AGENT}/microservices/AttestWallet/updateEpisodeStatus`;
