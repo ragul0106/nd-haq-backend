@@ -155,20 +155,21 @@ export class UserService {
     }
  async getPendingUsers(query: any = {}): Promise<User[]> {
     try {
-        const { page = 1, limit = 10 } = query;
+        const { page = 1, limit = 10, sortOrder = 'desc' } = query;
         const skip = (page - 1) * limit;
-        
+    
         return this.userModel
-            .find({ isApproved: false, isActive: true })
-            .skip(skip)
-            .limit(Number(limit))
-            .exec();
-    } catch (error) {
+          .find({ isApproved: false, isActive: true })
+          .sort({ createdAt: sortOrder }) // Use createdAt for sorting
+          .skip(skip)
+          .limit(Number(limit))
+          .exec();
+      } catch (error) {
         if (error instanceof HttpException) {
-            throw error;
+          throw error;
         }
         throw new InternalServerErrorException('Error fetching pending users');
-    }
+      }
  }
 
     async approveUser(_id: string, isApproved: boolean,roles:string[]): Promise<User> {
@@ -222,11 +223,14 @@ export class UserService {
     }
     async getApprovedUsers(query: any = {}): Promise<User[]> {
         try {
-            const { page = 1, limit = 10 } = query;
+            const { page = 1, limit = 10, sortOrder = 'desc' } = query;
             const skip = (page - 1) * limit;
-
+    
+            const sortDirection = sortOrder === 'asc' ? 1 : -1;
+    
             return this.userModel
                 .find({ isApproved: true, isActive: true })
+                .sort({ createdAt: sortDirection })
                 .skip(skip)
                 .limit(Number(limit))
                 .exec();

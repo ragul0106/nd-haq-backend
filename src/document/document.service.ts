@@ -314,37 +314,22 @@ export class DocumentService {
     }
     async getComments(documentId: string): Promise<any> {
         try {
-
-            const document = await this.documentModel.findOne({ documentId, isActive: true }).populate('comments.userId', 'userId name email mobileNumber role').exec();
+            const document = await this.documentModel
+                .findOne({ documentId, isActive: true })
+                .populate('comments.userId', 'userId name email mobileNumber role')
+                .exec();
+    
             if (!document) {
                 throw new NotFoundException('Document not found');
             }
-             if (!document.comments || document.comments.length === 0) {
-
-                throw new NotFoundException('No comments found for this document');
-            } 
-            const userIds = document.comments.map(c => c.userId);
-             
-            // document.comments = document.comments.map((comment: DocumentComment) => {
-            //     const user = comment.userId as any; // Ensure userId is populated
-            //     return {
-            //         ...comment,
-            //         userDetails: {
-            //             userId: user.userId,
-            //             name: user.name,
-            //             email: user.email,
-            //             mobileNumber: user.mobileNumber,
-            //             role: user.role
-            //         }
-            //     };
-            // });
-            return document.comments;
+    
+            const comments = document.comments || [];
+    
+            return comments; // Return empty array if no comments
         } catch (error) {
             if (error instanceof HttpException) throw error;
             throw new InternalServerErrorException('Error fetching comments');
         }
-
-
     }
 
     async getDocumentByUser(userId: string): Promise<DocumentTemplateType[]> {

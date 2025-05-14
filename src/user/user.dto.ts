@@ -1,4 +1,10 @@
-import { IsOptional, IsBooleanString, IsEmail, IsMongoId } from 'class-validator';
+import {
+  IsOptional,
+  IsBooleanString,
+  IsEmail,
+  IsMongoId,
+  IsIn,
+} from 'class-validator';
 
 export class FindUserQueryDto {
   @IsOptional()
@@ -12,4 +18,8 @@ export class FindUserQueryDto {
   @IsOptional()
   @IsMongoId()
   role?: string;
+
+  @IsOptional()
+  @IsIn(['asc', 'desc']) // Add this to support sorting
+  sortOrder?: 'asc' | 'desc';
 }
