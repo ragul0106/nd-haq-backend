@@ -145,6 +145,8 @@ import * as QRCode from 'qrcode';
     try {
  
       const embedUrl = `${process.env.API_ENDPOINT}/document/view/${id}`;
+      console.log(process.env.API_ENDPOINT);
+      
       const qrDataUrl = await QRCode.toDataURL(embedUrl);
       let newData = await this.documentServices.getVerifiableCredentialById(id);
       return res.json({
