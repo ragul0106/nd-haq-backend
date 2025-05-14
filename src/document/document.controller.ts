@@ -114,7 +114,7 @@ import * as QRCode from 'qrcode';
     //  }
     
  
-    @Get('/view/:id')
+    @Get('/viewold/:id')
   async getCredentials(@Param('id') id: string, @Res() res: Response) {
     console.log('Requested ID:', id);
 
@@ -160,6 +160,143 @@ import * as QRCode from 'qrcode';
     } catch (error) {
       console.error('QR generation error:', error);
       return res.status(500).json({ message: 'QR generation failed' });
+    }
+  }
+
+  @Get('/view/:id')
+  async getCredentialsNew(@Param('id') id: string, @Res() res: Response) {
+    console.log('Requested ID:', id);
+
+    console.log('Requested ID:', id);
+
+    const isJson = id.endsWith('.json');
+    const isVc = id.endsWith('.vc');
+    const lookupId = isJson || isVc ? id.replace(/\.(json|vc)$/i, '') : id;
+
+    const data = await this.documentServices.getVerifiableCredential(lookupId);
+    if (!data) {
+      return res.status(404).json({ message: 'Document not found', data: [] });
+    }
+
+    // Handle .json and .vc formats
+    if (isJson || isVc) {
+      try {
+        const vcData = JSON.parse(data.credentials.credentialVC);
+        return res.json(vcData);
+      } catch (error) {
+        console.error('Error parsing credentialVC:', error);
+        return res.status(500).json({ message: 'Invalid VC format' });
+      }
+    }
+
+    // Render HTML page with QR and form
+    try {
+      const vcData = JSON.parse(data.credentials.credentialVC);
+      const embedUrl = `${process.env.API_ENDPOINT || 'https://attest-uat.haqdarshak.com'}/document/view/${id}`;
+      const qrDataUrl = await QRCode.toDataURL(embedUrl);
+      console.log(vcData.credentialSubject);
+      
+      const formFields = Object.entries(vcData.credentialSubject).map(
+        ([key, value]) => `
+          <div class="form-group">
+            <label for="${key}">${key}</label>
+            <input type="text" id="${key}" name="${key}" value="${value}" readonly />
+          </div>
+        `
+      ).join('');
+
+      const html = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <title>Wallet Dashboard</title>
+          <style>
+            body {
+              font-family: "Helvetica Neue", sans-serif;
+              background-color: #f7f7f7;
+              margin: 0;
+              padding: 20px;
+            }
+
+            .header {
+              font-size: 28px;
+              font-weight: bold;
+              color: #1a1a40;
+              margin-bottom: 30px;
+            }
+
+            .container {
+              display: flex;
+              background-color: white;
+              padding: 40px;
+              border-radius: 8px;
+              max-width: 900px;
+              margin: auto;
+              box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+            }
+
+            .qr-container {
+              flex: 0 0 150px;
+              margin-right: 40px;
+            }
+
+            .qr-container img {
+              width: 150px;
+              height: 150px;
+              border-radius: 10px;
+            }
+
+            .form-container {
+              flex: 1;
+            }
+
+            .form-group {
+              margin-bottom: 20px;
+            }
+
+            label {
+              display: block;
+              font-weight: 600;
+              margin-bottom: 5px;
+              color: #2c2c54;
+            }
+
+            input {
+              width: 100%;
+              padding: 10px;
+              border: 1px solid #ccc;
+              border-radius: 6px;
+              background-color: #f9f9f9;
+              color: #333;
+              font-size: 14px;
+            }
+
+            input[readonly] {
+              background-color: #f0f0f0;
+              color: #666;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">Wallet Dashboard</div>
+
+          <div class="container">
+            <div class="qr-container">
+              <img src="${qrDataUrl}" alt="QR Code" />
+            </div>
+            <div class="form-container">
+              ${formFields}
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      return res.header('Content-Type', 'text/html').send(html);
+    } catch (error) {
+      console.error('QR or HTML generation error:', error);
+      return res.status(500).json({ message: 'Error generating view' });
     }
   }
   }
