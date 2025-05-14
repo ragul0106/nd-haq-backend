@@ -95,7 +95,7 @@ import * as QRCode from 'qrcode';
 
     @Get('/view/:id.json')
     async getJson(@Param('id') id: string, @Res() res: Response) {        
-       let data = await this.documentServices.getVerifiableCredential(id)
+       let data = await this.documentServices.getVerifiableCredentialById(id)
       if(!data){
         return res.status(404).json({ error: 'Document not found' });
       }          
