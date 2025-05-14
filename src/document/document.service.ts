@@ -16,7 +16,10 @@ import { CredentialsService } from 'src/credentials/credentials.service';
 import * as fs from 'fs';
 import * as path from 'path';
 import axios from 'axios';
- @Injectable()
+import * as dotenv from 'dotenv';
+
+dotenv.config();
+@Injectable()
 export class DocumentService {
     
     constructor(

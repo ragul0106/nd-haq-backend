@@ -16,7 +16,9 @@ import {
 import { JwtAuthGuard } from 'src/user/jwt-auth.guard';
 import { CreateDocumentDto, UpdateDocumentDto } from './document.dto';
 import * as QRCode from 'qrcode';
-  
+import * as dotenv from 'dotenv';
+dotenv.config();
+
   @Controller('document')
   export class DocumentController {
     constructor(private readonly documentServices: DocumentService) {}
@@ -142,6 +144,7 @@ import * as QRCode from 'qrcode';
 
     // Otherwise return full original-style response (old format)
     try {
+ 
       const embedUrl = `${process.env.API_ENDPOINT}/document/view/${id}`;
       const qrDataUrl = await QRCode.toDataURL(embedUrl);
       let newData = await this.documentServices.getVerifiableCredentialById(id);
