@@ -244,14 +244,14 @@ export class WalletService {
   }
   async callAgenAppAPI(episode_id:string,status:number): Promise<any> { 
 
-    const url = 'https://test.haqdarshak.com/api/microservices/AttestWallet/updateEpisodeStatus';
+    const url = `${process.env.API_ENDPOINT_AGENT}/microservices/AttestWallet/updateEpisodeStatus`;
     const headers = {
       'Content-Type': 'application/x-www-form-urlencoded',
       'Cookie': 'PHPSESSID=o8s3jt3ppuge798emkeudourf0',
     };
     const data = new URLSearchParams();
     data.append('episode_id', episode_id);
-    data.append('status', '7');
+    data.append('status', status.toString());
 
     try { 
       const response = await axios.post(url, data, { headers });

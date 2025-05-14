@@ -199,6 +199,7 @@ export class DocumentService {
                 document.schemaId = digitizeData.documentName;
             } else if (digitizeData.digitizationStatus == 'reject') {
                 document.documentStatus = DocumentStatus.MakerRejected;
+                this.walletService.callAgenAppAPI(document.caseId, 1);
             } else if (digitizeData.digitizationStatus == 'issueCredential') {                
                 accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
                 document.documentStatus = DocumentStatus.AttesterVerified;
@@ -223,6 +224,7 @@ export class DocumentService {
 
             } else if (digitizeData.digitizationStatus == 'attesterReject') {
                 document.documentStatus = DocumentStatus.MakerPending;
+                this.walletService.callAgenAppAPI(document.caseId, 1);
             } else if (digitizeData.digitizationStatus == 'attesterReword') {
                 document.documentStatus = DocumentStatus.MakerPending;
             }
