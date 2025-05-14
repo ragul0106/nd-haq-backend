@@ -74,7 +74,7 @@ import * as QRCode from 'qrcode';
     @Put('/addComments/:id')
    async addComments(
       @Param('id') id: string,
-      @Body() body: { comment: string, userId: string },
+      @Body() body: { comment: string, userId: string ,role: string },
     ) {
        
       const data = await this.documentServices.addComments(id, body);

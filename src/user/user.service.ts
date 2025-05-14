@@ -155,15 +155,19 @@ export class UserService {
     }
  async getPendingUsers(query: any = {}): Promise<User[]> {
     try {
+        // console.log("-------",query)
         const { page = 1, limit = 10, sortOrder = 'desc' } = query;
         const skip = (page - 1) * limit;
-    
-        return this.userModel
+        const sortDirection = sortOrder === 'asc' ? 1 : -1;
+        console.log("sortDirection",sortDirection);
+        const users = this.userModel
           .find({ isApproved: false, isActive: true })
-          .sort({ createdAt: sortOrder }) // Use createdAt for sorting
+          .sort({ createdAt: sortDirection }) // Use createdAt for sorting
           .skip(skip)
           .limit(Number(limit))
           .exec();
+        console.log('users',users)
+        return users
       } catch (error) {
         if (error instanceof HttpException) {
           throw error;
