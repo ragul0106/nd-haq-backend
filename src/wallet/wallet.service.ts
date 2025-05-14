@@ -245,12 +245,9 @@ export class WalletService {
   }
   async callAgenAppAPI(episode_id:string,status:number): Promise<any> { 
     console.log("****************");
-    const apiUrl = this.configService.get<string>('API_ENDPOINT_AGENT');
-    console.log(apiUrl, '✅ Loaded from .env');
-    console.log("****************");
-    console.log("NEXT_PUBLIC_API_ENDPOINT",process.env.NEXT_PUBLIC_API_ENDPOINT);
-    console.log("****************");
-    
+
+    const apiUrl = this.configService.get<string>('API_ENDPOINT_AGENT')==undefined ? 'https://test.haqdarshak.com/api' : this.configService.get<string>('API_ENDPOINT_AGENT');
+ 
     const url = `${apiUrl}/microservices/AttestWallet/updateEpisodeStatus`;
     const headers = {
       'Content-Type': 'application/x-www-form-urlencoded',

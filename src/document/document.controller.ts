@@ -143,10 +143,9 @@ import * as QRCode from 'qrcode';
 
     // Otherwise return full original-style response (old format)
     try {
- 
+      process.env.API_ENDPOINT = process.env.API_ENDPOINT || 'https://attest-uat.haqdarshak.com';
       const embedUrl = `${process.env.API_ENDPOINT}/document/view/${id}`;
-      console.log(process.env.API_ENDPOINT);
-      
+       
       const qrDataUrl = await QRCode.toDataURL(embedUrl);
       let newData = await this.documentServices.getVerifiableCredentialById(id);
       return res.json({
