@@ -8,6 +8,7 @@ import * as express from 'express';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
+console.log('API_ENDPOINT_AGENT from .env:', process.env.API_ENDPOINT_AGENT);
 async function bootstrap() {
   const app = await NestFactory.create(AppModule,{
     cors: {

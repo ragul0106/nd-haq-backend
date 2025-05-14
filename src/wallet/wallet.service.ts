@@ -3,10 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Wallet, WalletDocument, WalletStatus } from './wallet.schema';
 import axios from 'axios';
-import * as dotenv from 'dotenv';
 import { ConfigService } from '@nestjs/config';
-
-dotenv.config();
 
 @Injectable()
 export class WalletService {
