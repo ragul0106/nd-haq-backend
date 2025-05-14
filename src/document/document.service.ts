@@ -16,6 +16,9 @@ import { CredentialsService } from 'src/credentials/credentials.service';
 import * as fs from 'fs';
 import * as path from 'path';
 import axios from 'axios';
+import { logger } from '../logger';
+import { json } from 'stream/consumers';
+
 @Injectable()
 export class DocumentService {
     
@@ -138,7 +141,8 @@ export class DocumentService {
             let accountData;
             document.isApproved = true;
             document.attesterId = digitizeData.attesterId;
-        
+            logger.info(JSON.stringify(digitizeData));
+
 
             if (digitizeData.digitizationStatus == 'digitise') {
                 document.digitizedData = digitizeData.jsonData;
@@ -232,7 +236,7 @@ export class DocumentService {
              
             return await document.save();
         } catch (error) {             
-            console.log(error);
+            logger.error('Error in digitizing document:', error);
             if (error instanceof HttpException) throw error;
             throw new InternalServerErrorException('Error digitizing document');
         }
