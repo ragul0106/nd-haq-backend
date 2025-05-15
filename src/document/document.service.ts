@@ -190,13 +190,19 @@ export class DocumentService {
                
                 let test_cert_data = digitizeData.jsonData
                 let walletServiceData = await this.walletService.issueVc(schemaData?.DhiwaySchemaId, test_cert_data)
+                console.log(walletServiceData);
+                
                 if (walletServiceData?.error) {
+                    console.log("walletServiceData", walletServiceData.error);
+                    
                     throw new NotFoundException('Error in issuing VC');
                 }
+
                 document.VcId = walletServiceData.identifier; // Assuming walletServiceData is a string, directly assign it
                 document.verifiableCredentials= walletServiceData?.vc;
                 document.credentialId = walletServiceData?.vc?.id;
-
+                console.log(document.verifiableCredentials);
+                
             } else if (digitizeData.digitizationStatus == 'saved') {
                 document.documentStatus = DocumentStatus.MakerSaved;
                 document.schemaId = digitizeData.documentName;
