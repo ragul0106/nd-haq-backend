@@ -14,7 +14,8 @@ import { ConfigModule } from '@nestjs/config';
  
 @Module({
   imports: [MongooseModule.forRoot('mongodb://localhost:27017/hq-attestation'), UserModule, RoleModule, DocumentModule,DocumentFieldsModule, SchemaModule, WalletModule, DigitizeModule, CredentialsModule
-   ,  ],
+   ,    ConfigModule.forRoot({ isGlobal: true }), // Automatically uses .env
+  ],
   providers: [RoleSeeder, SeederService],
  
 })
