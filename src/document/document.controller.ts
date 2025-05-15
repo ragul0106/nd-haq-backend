@@ -201,7 +201,7 @@ import * as QRCode from 'qrcode';
     try {
       const vcData = JSON.parse(data.credentials.credentialVC);
       const url = `${process.env.API_ENDPOINT}`;
-      const embedUrl = `${url}/document/view/${id}`;
+      const embedUrl = `https://api-attest-uat.haqdarshak.com/document/view/${id}`;
       const qrDataUrl = await QRCode.toDataURL(embedUrl); 
       
       const formFields = Object.entries(vcData.credentialSubject).map(
