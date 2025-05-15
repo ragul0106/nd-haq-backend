@@ -210,6 +210,8 @@ export class DocumentService {
                 document.documentStatus = DocumentStatus.AttesterVerified;
                 digitizeData.documentObjectID = document._id
               let addedCreds =   await this.walletService.addCredential(accountData.userDetails.did, document.VcId, document.verifiableCredentials, accountData.token)
+              console.log("addedCreds", addedCreds);
+              
                 await this.walletService.updateWalletUserToken(document.personID, accountData.token)
                 if(addedCreds.success){
                                     const credentials = await this.walletService.getCredentials(accountData.token);

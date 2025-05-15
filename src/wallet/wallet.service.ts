@@ -82,6 +82,7 @@ export class WalletService {
     }
     this.initializeApp(this.walletUrl, this.walletToken);
     const url = `${this.baseUrl}/custom-user/create`;
+console.log(this.walletUrl, this.walletToken, "this.walletUrl, this.walletToken");
 
     const headers = this.buildHeaders();
     const payload = { accountId, name };
@@ -104,6 +105,7 @@ export class WalletService {
     if (!this.walletUrl || !this.walletToken) {
       throw new Error('walletUrl or walletToken is not defined');
     }
+    console.log(this.walletUrl, this.walletToken, "this.walletUrl, this.walletToken");
     this.initializeApp(this.walletUrl, this.walletToken);
 
     const url = `${this.baseUrl}/custom-user/regenerate-token`;
