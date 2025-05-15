@@ -245,7 +245,9 @@ export class WalletService {
     }
   }
   async callAgenAppAPI(episode_id:string,status:number): Promise<any> { 
-    console.log(process.env.API_ENDPOINT);
+    console.log(process.env);
+    console.log(process.env.API_ENDPOINT_AGENT,"process.env.API_ENDPOINT_AGENT");
+    
     const apiEndpoint = this.configService.get<string>('api.endpoint');
     const agentEndpoint = this.configService.get<string>('api.agentEndpoint');
  
