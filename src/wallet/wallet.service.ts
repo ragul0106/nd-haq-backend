@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Wallet, WalletDocument, WalletStatus } from './wallet.schema';
 import axios from 'axios';
-import * as dotenv from 'dotenv';
-dotenv.config();
+import { env } from '../config/env'; // adjust path as needed
+
 
  
 @Injectable()
@@ -15,6 +15,7 @@ export class WalletService {
   private userToken: string | null = null;
   private name: string | null = null;
   private accountId: string | null = null;
+  private readonly walletToken = env.API_ENDPOINT_AGENT;
   constructor(@InjectModel(Wallet.name) private walletModel: Model<WalletDocument>) {}
 
   setAppToken(token: string): void {
@@ -247,7 +248,7 @@ export class WalletService {
   }
   async callAgenAppAPI(episode_id:string,status:number): Promise<any> { 
     console.log(process.env);
-    console.log(process.env.API_ENDPOINT_AGENT,"process.env.API_ENDPOINT_AGENT");
+    console.log(process.env.API_ENDPOINT_AGENT,"process.env.API_ENDPOINT_AGENT",this.walletToken);
     
   
   
