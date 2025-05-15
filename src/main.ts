@@ -6,6 +6,8 @@ import { join } from 'path';
 import { LoggerMiddleware } from './logger.middleware';
 import * as express from 'express';
 
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule,{

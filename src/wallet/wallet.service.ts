@@ -3,8 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Wallet, WalletDocument, WalletStatus } from './wallet.schema';
 import axios from 'axios';
-import { ConfigService } from '@nestjs/config';
-
+ 
 @Injectable()
 export class WalletService {
   private baseUrl: string;
@@ -13,7 +12,7 @@ export class WalletService {
   private userToken: string | null = null;
   private name: string | null = null;
   private accountId: string | null = null;
-  constructor(@InjectModel(Wallet.name) private walletModel: Model<WalletDocument>,private configService: ConfigService) {}
+  constructor(@InjectModel(Wallet.name) private walletModel: Model<WalletDocument>) {}
 
   setAppToken(token: string): void {
     this.authToken = token;
@@ -245,15 +244,9 @@ export class WalletService {
   }
   async callAgenAppAPI(episode_id:string,status:number): Promise<any> { 
     console.log(process.env.API_ENDPOINT);
-    const API_ENDPOINT = this.configService.get<string>('API_ENDPOINT');
-    const API_ENDPOINT_AGENT = this.configService.get<string>('API_ENDPOINT_AGENT');
-    console.log('JWT Secret:', API_ENDPOINT);
-    console.log('JWT Secret:', API_ENDPOINT_AGENT);
-
+ 
     console.log('JWT_SECRET from process.env:', process.env.API_ENDPOINT_AGENT);
-    console.log('JWT_SECRET from ConfigService:', this.configService.get('API_ENDPOINT_AGENT'));
-
-    console.log(this.configService);
+  
     
     
     const apiUrl =process.env.API_ENDPOINT_AGENT || 'https://agenapp-api.demo.dhiway.net/api/v1';

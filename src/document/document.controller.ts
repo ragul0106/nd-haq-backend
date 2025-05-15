@@ -16,14 +16,13 @@ import {
 import { JwtAuthGuard } from 'src/user/jwt-auth.guard';
 import { CreateDocumentDto, UpdateDocumentDto } from './document.dto';
 import * as QRCode from 'qrcode';
-import { ConfigService } from '@nestjs/config';
-
+ 
  
  
 
   @Controller('document')
   export class DocumentController {
-    constructor(private readonly documentServices: DocumentService,private configService: ConfigService) {}
+    constructor(private readonly documentServices: DocumentService) {}
   
     @Post('/create')
     async createDocument(@Body() body: CreateDocumentDto) {
@@ -201,8 +200,7 @@ import { ConfigService } from '@nestjs/config';
     // Render HTML page with QR and form
     try {
       const vcData = JSON.parse(data.credentials.credentialVC);
-      const url = `${this.configService.get<string>('API_ENDPOINT')}`;
-      console.log('API Endpoint:', url);
+       console.log('API Endpoint:', process.env.API_ENDPOINT);
       
       const embedUrl = `https://api-attest-uat.haqdarshak.com/document/view/${id}`;
       const qrDataUrl = await QRCode.toDataURL(embedUrl); 
