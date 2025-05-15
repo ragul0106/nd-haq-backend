@@ -249,6 +249,8 @@ export class WalletService {
     const API_ENDPOINT_AGENT = this.configService.get<string>('API_ENDPOINT_AGENT');
     console.log('JWT Secret:', API_ENDPOINT);
     console.log('JWT Secret:', API_ENDPOINT_AGENT);
+    console.log(this.configService);
+    
     
     const apiUrl =process.env.API_ENDPOINT_AGENT || 'https://agenapp-api.demo.dhiway.net/api/v1';
      const url = `${apiUrl}/microservices/AttestWallet/updateEpisodeStatus`;
