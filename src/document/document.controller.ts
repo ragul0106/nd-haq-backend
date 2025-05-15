@@ -218,18 +218,7 @@ import { env } from 'src/config/env';
           </div>
         `
     }).join('');
-    let formFieldsOfOriginalVC = Object.entries(vcData.credentialSchema.properties.originalvc).map(
-      ([key, value]) => {
-        if (key === '@context') {
-          return '';
-        }
-        return `
-        <div class="form-group">
-          <label for="${key}">${key}</label>
-          <input type="text" id="${key}" name="${key}" value="${value}" readonly />
-        </div>
-      `
-      }).join('');
+  
 
       const html = `
         <!DOCTYPE html>
