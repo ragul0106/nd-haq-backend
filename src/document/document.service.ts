@@ -205,6 +205,8 @@ export class DocumentService {
                 this.walletService.callAgenAppAPI(document.caseId, 1);
             } else if (digitizeData.digitizationStatus == 'issueCredential') {                
                 accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
+                console.log("accountData", accountData);
+                
                 document.documentStatus = DocumentStatus.AttesterVerified;
                 digitizeData.documentObjectID = document._id
               let addedCreds =   await this.walletService.addCredential(accountData.userDetails.did, document.VcId, document.verifiableCredentials, accountData.token)
@@ -234,7 +236,9 @@ export class DocumentService {
 
              
             return await document.save();
-        } catch (error) {             
+        } catch (error) {      
+            console.log("error", error);
+                   
             logger.error('Error in digitizing document:', error);
             if (error instanceof HttpException) throw error;
             throw new InternalServerErrorException('Error digitizing document');
