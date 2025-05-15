@@ -249,6 +249,10 @@ export class WalletService {
     const API_ENDPOINT_AGENT = this.configService.get<string>('API_ENDPOINT_AGENT');
     console.log('JWT Secret:', API_ENDPOINT);
     console.log('JWT Secret:', API_ENDPOINT_AGENT);
+
+    console.log('JWT_SECRET from process.env:', process.env.API_ENDPOINT_AGENT);
+    console.log('JWT_SECRET from ConfigService:', this.configService.get('API_ENDPOINT_AGENT'));
+
     console.log(this.configService);
     
     
