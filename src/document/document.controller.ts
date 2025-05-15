@@ -152,7 +152,7 @@ import * as QRCode from 'qrcode';
     // Otherwise return full original-style response (old format)
     try {
       
-      const embedUrl = `${process.env.API_ENDPOINT}/document/view/${id}`;
+      const embedUrl = `https://api-attest-uat.haqdarshak.com/document/view/${id}`;
        
       const qrDataUrl = await QRCode.toDataURL(embedUrl);
       let newData = await this.documentServices.getVerifiableCredentialById(id);
