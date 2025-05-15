@@ -25,7 +25,7 @@ async function bootstrap() {
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.use('/images', express.static(join(__dirname, '..', 'public', 'images')));
   app.use(new LoggerMiddleware().use);
-  console.log(process.env.PORT,"process.env.PORT");
+  console.log(process.env,"process.env.PORT");
   
   await app.listen(process.env.PORT ?? 3000);
 }
