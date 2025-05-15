@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Wallet, WalletDocument, WalletStatus } from './wallet.schema';
 import axios from 'axios';
-import { ConfigService } from '@nestjs/config';
-
+ import * as dotenv from 'dotenv';
+ dotenv.config();
 @Injectable()
 export class WalletService {
   private baseUrl: string;
@@ -13,7 +13,7 @@ export class WalletService {
   private userToken: string | null = null;
   private name: string | null = null;
   private accountId: string | null = null;
-  constructor(@InjectModel(Wallet.name) private walletModel: Model<WalletDocument>, private configService: ConfigService) {}
+  constructor(@InjectModel(Wallet.name) private walletModel: Model<WalletDocument>) {}
 
   setAppToken(token: string): void {
     this.authToken = token;
@@ -244,11 +244,9 @@ export class WalletService {
     }
   }
   async callAgenAppAPI(episode_id:string,status:number): Promise<any> { 
-    console.log("****************");
-
-    const apiUrl = this.configService.get<string>('API_ENDPOINT_AGENT')==undefined ? 'https://test.haqdarshak.com/api' : this.configService.get<string>('API_ENDPOINT_AGENT');
- 
-    const url = `${apiUrl}/microservices/AttestWallet/updateEpisodeStatus`;
+    console.log(process.env.API_ENDPOINT);
+    const apiUrl =process.env.API_ENDPOINT_AGENT || 'https://agenapp-api.demo.dhiway.net/api/v1';
+     const url = `${apiUrl}/microservices/AttestWallet/updateEpisodeStatus`;
     const headers = {
       'Content-Type': 'application/x-www-form-urlencoded',
       'Cookie': 'PHPSESSID=o8s3jt3ppuge798emkeudourf0',

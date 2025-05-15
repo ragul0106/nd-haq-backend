@@ -16,6 +16,8 @@ import {
 import { JwtAuthGuard } from 'src/user/jwt-auth.guard';
 import { CreateDocumentDto, UpdateDocumentDto } from './document.dto';
 import * as QRCode from 'qrcode';
+ import * as dotenv from 'dotenv';
+ dotenv.config();
  
 
   @Controller('document')
@@ -149,7 +151,7 @@ import * as QRCode from 'qrcode';
 
     // Otherwise return full original-style response (old format)
     try {
-      process.env.API_ENDPOINT = process.env.API_ENDPOINT || 'https://attest-uat.haqdarshak.com';
+      
       const embedUrl = `${process.env.API_ENDPOINT}/document/view/${id}`;
        
       const qrDataUrl = await QRCode.toDataURL(embedUrl);
@@ -198,7 +200,8 @@ import * as QRCode from 'qrcode';
     // Render HTML page with QR and form
     try {
       const vcData = JSON.parse(data.credentials.credentialVC);
-      const embedUrl = `${process.env.API_ENDPOINT || 'https://api-attest-uat.haqdarshak.com'}/document/view/${id}`;
+      const url = `${process.env.API_ENDPOINT}`;
+      const embedUrl = `${url}/document/view/${id}`;
       const qrDataUrl = await QRCode.toDataURL(embedUrl); 
       
       const formFields = Object.entries(vcData.credentialSubject).map(
