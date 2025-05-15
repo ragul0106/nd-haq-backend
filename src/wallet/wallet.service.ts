@@ -148,6 +148,8 @@ console.log(this.walletUrl, this.walletToken, "this.walletUrl, this.walletToken"
     if (!this.walletUrl || !this.walletToken) {
       throw new Error('walletUrl or walletToken is not defined');
     }
+    console.log(this.walletUrl, this.walletToken, "this.walletUrl, this.walletToken");
+    
     this.initializeApp(this.walletUrl, this.walletToken);
     const url = `${this.baseUrl}/message/create/${did}`;
 
