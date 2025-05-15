@@ -12,16 +12,12 @@ import { DigitizeModule } from './digitize/digitize.module';
 import { CredentialsModule } from './credentials/credentials.module';
 import { ConfigModule } from '@nestjs/config';
 
-import developmentConfig from './config/development';
-import productionConfig from './config/production';
-const environment = process.env.NODE_ENV || 'development';
-console.log(environment);
 
 @Module({
   imports: [MongooseModule.forRoot('mongodb://localhost:27017/hq-attestation'), UserModule, RoleModule, DocumentModule,DocumentFieldsModule, SchemaModule, WalletModule, DigitizeModule, CredentialsModule
     ,ConfigModule.forRoot({
       isGlobal: true,
-      load: [environment === 'production' ? productionConfig : developmentConfig],
+      envFilePath: '.env', 
     }), 
   ],
   providers: [RoleSeeder, SeederService],

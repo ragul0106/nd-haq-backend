@@ -16,12 +16,15 @@ import {
 import { JwtAuthGuard } from 'src/user/jwt-auth.guard';
 import { CreateDocumentDto, UpdateDocumentDto } from './document.dto';
 import * as QRCode from 'qrcode';
+import { env } from 'src/config/env';
+
  
  
  
 
   @Controller('document')
   export class DocumentController {
+    private readonly apiUrl = env.API_ENDPOINT;
     constructor(private readonly documentServices: DocumentService) {}
   
     @Post('/create')
@@ -152,7 +155,7 @@ import * as QRCode from 'qrcode';
     // Otherwise return full original-style response (old format)
     try {
       
-      const embedUrl = `https://api-attest-uat.haqdarshak.com/document/view/${id}`;
+      const embedUrl = `${this.apiUrl}/document/view/${id}`;
        
       const qrDataUrl = await QRCode.toDataURL(embedUrl);
       let newData = await this.documentServices.getVerifiableCredentialById(id);
@@ -199,10 +202,8 @@ import * as QRCode from 'qrcode';
 
     // Render HTML page with QR and form
     try {
-      const vcData = JSON.parse(data.credentials.credentialVC);
-       console.log('API Endpoint:', process.env.API_ENDPOINT);
-      
-      const embedUrl = `https://api-attest-uat.haqdarshak.com/document/view/${id}`;
+      const vcData = JSON.parse(data.credentials.credentialVC);       
+      const embedUrl = `${this.apiUrl}/document/view/${id}`;
       const qrDataUrl = await QRCode.toDataURL(embedUrl); 
       
       const formFields = Object.entries(vcData.credentialSubject).map(
