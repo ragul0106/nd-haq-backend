@@ -16,8 +16,7 @@ import {
 import { JwtAuthGuard } from 'src/user/jwt-auth.guard';
 import { CreateDocumentDto, UpdateDocumentDto } from './document.dto';
 import * as QRCode from 'qrcode';
- import * as dotenv from 'dotenv';
- dotenv.config();
+ 
  
 
   @Controller('document')
