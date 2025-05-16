@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, HttpException, HttpStatus } from '@nestj
 
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { SchemaModel, SchemaDocument } from './schema.schema';
+import { SchemaModel, SchemaDocument, SchemaStatus } from './schema.schema';
 import { CreateSchemaDto } from './create-schema.dto';
 import axios from 'axios';
 import { env } from 'src/config/env';
@@ -64,7 +64,7 @@ export class SchemaService {
   }
 
   async findAll(): Promise<SchemaDocument[]>{
-    return this.schemaModel.find({status:true}).exec();
+    return this.schemaModel.find({status:SchemaStatus.active}).exec();
 
   }
 

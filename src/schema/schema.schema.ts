@@ -28,8 +28,6 @@ export class SchemaModel {
   
   @Prop()
   updatedAt: Date;
-  @Prop({ default: true })
-  isActive: boolean;
 }
 
 export type SchemaDocument = SchemaModel & Document;

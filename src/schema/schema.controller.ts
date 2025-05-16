@@ -1,13 +1,14 @@
-import { Body, Controller, Get, Post,Param,Req, Put } from '@nestjs/common';
+import { Body, Controller, Get, Post, Param, Req, Put } from '@nestjs/common';
 import { SchemaService } from './schema.service';
 import { CreateSchemaDto } from './create-schema.dto';
+import { SchemaStatus } from './schema.schema';
 
 @Controller('schemas')
 export class SchemaController {
-  constructor(private readonly schemaService: SchemaService) {}
+  constructor(private readonly schemaService: SchemaService) { }
 
   @Post()
-  async create(@Body() createSchemaDto: CreateSchemaDto) {   
+  async create(@Body() createSchemaDto: CreateSchemaDto) {
     return await this.schemaService.create(createSchemaDto);
   }
 
@@ -19,7 +20,7 @@ export class SchemaController {
       .map(schema => ({
         schemaName: schema.schemaName,
         schema_id: schema._id, // ✅ No TS error
-        dhiway_id : schema.DhiwaySchemaId,
+        dhiway_id: schema.DhiwaySchemaId,
         created_at: schema.createdAt,
 
       }));
@@ -27,17 +28,22 @@ export class SchemaController {
 
   @Get('getSchema/:id')
   async getSchema(@Param('id') id: string, @Req() req) {
-      req.message = 'Schema fetched successfully';
-      const schema = await this.schemaService.getById(id);
-      return schema;
+    req.message = 'Schema fetched successfully';
+    const schema = await this.schemaService.getById(id);
+    return schema;
   }
   @Get('getSchemaByName/testFunction')
-  async testFunction(){
+  async testFunction() {
     return this.schemaService.testFunction()
   }
   @Put('updateSchemaStatus/:id')
   async updateSchemaStatus(@Param('id') id: string, @Body() body: { status: string }) {
-    const updatedSchema = await this.schemaService.updateSchemaStatus(id, body.status);
+    let updatedSchema = {};
+    if (body.status) {
+      updatedSchema = await this.schemaService.updateSchemaStatus(id, SchemaStatus.active);
+    } else {
+      updatedSchema = await this.schemaService.updateSchemaStatus(id, SchemaStatus.inactive);
+    }
     return updatedSchema;
   }
 }
