@@ -210,7 +210,17 @@ import { env } from 'src/config/env';
         ([key, value]) => {
           if (key === '@context') {
             return '';
-          }
+          }          
+          //get Object length 
+          if (typeof value === 'object' && value !== null && Object.keys(value).length > 0) {           
+            return `
+              <div class="form-group">
+                <label for="${key}">${key}</label>
+                <input type="text" id="${key}" name="${key}" value="${JSON.stringify(value)}" readonly />
+              </div>
+            `;
+          } 
+
           return `
           <div class="form-group">
             <label for="${key}">${key}</label>

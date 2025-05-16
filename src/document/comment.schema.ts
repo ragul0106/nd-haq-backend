@@ -12,7 +12,7 @@ export class DocumentComment {
   @Prop({ required: true })
   comment: string;
 
-  @Prop({ required: true }) // ✅ Add this line
+  @Prop() // ✅ Add this line
   role: string;
 
   @Prop({ default: Date.now })
