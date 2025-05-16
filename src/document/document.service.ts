@@ -147,7 +147,6 @@ export class DocumentService {
             if (digitizeData.digitizationStatus == 'digitise') {
                 document.attesterId = digitizeData.attesterId;
                 let schemaData= await this.schemaService.getById(digitizeData.documentName)
-                document.documentStatus = DocumentStatus.MakerCompleted;
                 document.schemaId = digitizeData.documentName;
                 document.dhiwaySchemaId = schemaData.DhiwaySchemaId
                 if (document.accountId == null || document.accountId == "" || document.accountId == undefined) {
@@ -190,18 +189,16 @@ export class DocumentService {
                
                 let test_cert_data = digitizeData.jsonData
                 let walletServiceData = await this.walletService.issueVc(schemaData?.DhiwaySchemaId, test_cert_data)
-                console.log(walletServiceData);
-                
+                 
                 if (walletServiceData?.error) {
                     console.log("walletServiceData", walletServiceData.error);
                     
                     throw new NotFoundException('Error in issuing VC');
                 }
-
+                document.documentStatus = DocumentStatus.MakerCompleted;
                 document.VcId = walletServiceData.identifier; // Assuming walletServiceData is a string, directly assign it
                 document.verifiableCredentials= walletServiceData?.vc;
                 document.credentialId = walletServiceData?.vc?.id;
-                console.log(document.verifiableCredentials);
                 
             } else if (digitizeData.digitizationStatus == 'saved') {
                 document.documentStatus = DocumentStatus.MakerSaved;
@@ -213,25 +210,25 @@ export class DocumentService {
                 accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
                 console.log("accountData", accountData);
                 
-                document.documentStatus = DocumentStatus.AttesterVerified;
-                digitizeData.documentObjectID = document._id
+             
               let addedCreds =   await this.walletService.addCredential(accountData.userDetails.did, document.VcId, document.verifiableCredentials, accountData.token)
               console.log("addedCreds", addedCreds);
               
                 await this.walletService.updateWalletUserToken(document.personID, accountData.token)
-                if(addedCreds.success){
-                                    const credentials = await this.walletService.getCredentials(accountData.token);
-                             await  this.credentialsService.saveCredentials(document.personID, credentials[credentials.length - 1]);  
+                if (addedCreds.success) {
+                    document.documentStatus = DocumentStatus.AttesterVerified;
+                    digitizeData.documentObjectID = document._id;
+                    const credentials = await this.walletService.getCredentials(accountData.token);
+                    await this.credentialsService.saveCredentials(document.personID, credentials[credentials.length - 1]);      
                 }
               
               if (addedCreds?.error) {
                     throw new NotFoundException('Error in adding credential');
-                }else{
-                    document.did = accountData.userDetails.did  
-                    document.credentialId = addedCreds?.identifier
-                    document.credentialData = addedCreds
+                } else {
+                    document.did = accountData.userDetails.did;
+                    document.credentialId = addedCreds?.identifier;
+                    document.credentialData = addedCreds;
                 }
-              
                  await this.walletService.callAgenAppAPI(document.caseId, 8)              
 
 
