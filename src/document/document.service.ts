@@ -238,7 +238,7 @@ export class DocumentService {
             } else if (digitizeData.digitizationStatus == 'attesterReject') {
                 document.documentStatus = DocumentStatus.MakerPending;
                 this.walletService.callAgenAppAPI(document.caseId, 1);
-            } else if (digitizeData.digitizationStatus == 'attesterReword') {
+            } else if (digitizeData.digitizationStatus == 'attesterRework') {
                 document.documentStatus = DocumentStatus.MakerPending;
             }
 
@@ -414,7 +414,8 @@ async downloadImageToServer(imageUrl: string): Promise<string> {
     return new Promise((resolve, reject) => {
       writer.on('finish', () => {
         // Return the URL of the saved image
-        const publicUrl = `${baseUrl}/${saveFolder}/${filename}`;
+        const publicUrl = `/${saveFolder}/${filename}`;
+        console.log(publicUrl,"publicUrl")
         resolve(publicUrl);
       });
       writer.on('error', reject);
