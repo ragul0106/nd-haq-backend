@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post,Param,Req } from '@nestjs/common';
+import { Body, Controller, Get, Post,Param,Req, Put } from '@nestjs/common';
 import { SchemaService } from './schema.service';
 import { CreateSchemaDto } from './create-schema.dto';
 
@@ -34,5 +34,10 @@ export class SchemaController {
   @Get('getSchemaByName/testFunction')
   async testFunction(){
     return this.schemaService.testFunction()
+  }
+  @Put('updateSchemaStatus/:id')
+  async updateSchemaStatus(@Param('id') id: string, @Body() body: { status: string }) {
+    const updatedSchema = await this.schemaService.updateSchemaStatus(id, body.status);
+    return updatedSchema;
   }
 }

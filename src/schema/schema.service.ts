@@ -64,7 +64,7 @@ export class SchemaService {
   }
 
   async findAll(): Promise<SchemaDocument[]>{
-    return this.schemaModel.find().exec();
+    return this.schemaModel.find({status:true}).exec();
 
   }
 
@@ -150,5 +150,18 @@ private _handleRequestError(e: any, context: string) {
     message: e.message,
   };
 }
- 
+async updateSchemaStatus(id: string, status: string): Promise<any> {
+  const updatedSchema = await this.schemaModel.findByIdAndUpdate(
+    id,
+    { status },
+    { new: true },
+  );
+  if (!updatedSchema) {
+    throw new NotFoundException(`Schema with ID ${id} not found`);
+  }
+  return {
+    id: updatedSchema._id,
+    status: updatedSchema.status,
+  };
 }
+  };
