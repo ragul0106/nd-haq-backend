@@ -14,7 +14,6 @@ async function bootstrap() {
     cors: {
       origin: '*', // Allow only specific origin in production
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-      allowedHeaders: 'Content-Type, Authorization',
       credentials: true,
       preflightContinue: false,    // NestJS will handle OPTIONS
       optionsSuccessStatus: 204,   // Successful preflight request status
