@@ -12,7 +12,7 @@ dotenv.config();
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     cors: {
-      origin: 'https://your-frontend-domain.com', // Allow only specific origin in production
+      origin: '*', // Allow only specific origin in production
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
       allowedHeaders: 'Content-Type, Authorization',
       credentials: true,
