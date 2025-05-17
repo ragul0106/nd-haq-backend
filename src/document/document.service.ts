@@ -18,7 +18,8 @@ import * as path from 'path';
 import axios from 'axios';
 import { logger } from '../logger';
 import { json } from 'stream/consumers';
-
+import { log } from 'console';
+import { SchemaValidationService } from 'src/common/schema-validation.service';
 @Injectable()
 export class DocumentService {
     
@@ -27,7 +28,8 @@ export class DocumentService {
         private readonly documentModel: Model<DocumentTemplateType>,
         private readonly walletService: WalletService,
         private readonly schemaService: SchemaService ,
-        private readonly credentialsService: CredentialsService
+        private readonly credentialsService: CredentialsService,
+        private readonly schemaValidationService: SchemaValidationService
  
     ) { }
 
@@ -195,28 +197,19 @@ export class DocumentService {
                 document.documentStatus = DocumentStatus.MakerRejected;
                 this.walletService.callAgenAppAPI(document.caseId, 1);
             } else if (digitizeData.digitizationStatus == 'issueCredential') {   
-                    let test_cert_data = digitizeData.jsonData
-                
+                    let test_cert_data = digitizeData.jsonData                  
                 let schemaData= await this.schemaService.getById(digitizeData.documentName)
+                 let validSchema= await this.schemaValidationService.validateAndGenerateJSON(schemaData, test_cert_data);
                 document.dhiwaySchemaId = schemaData.DhiwaySchemaId
-                 let walletServiceData = await this.walletService.issueVc(schemaData?.DhiwaySchemaId, test_cert_data)                
-                 console.log(walletServiceData);
-                 
-                if (walletServiceData?.error) {
-                    console.log("walletServiceData", walletServiceData.error);
-                    
+                 let walletServiceData = await this.walletService.issueVc(schemaData?.DhiwaySchemaId, validSchema.result)                
+                 if (walletServiceData?.error) {
                     throw new NotFoundException('Error in issuing VC');
                 }
                 document.VcId = walletServiceData.identifier; // Assuming walletServiceData is a string, directly assign it
                 document.verifiableCredentials= walletServiceData?.vc;
                 document.credentialId = walletServiceData?.vc?.id;
                 accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
-                console.log("accountData", accountData);
-                
-             
-              let addedCreds =   await this.walletService.addCredential(accountData.userDetails.did, document.VcId, document.verifiableCredentials, accountData.token)
-              console.log("addedCreds", addedCreds);
-              
+              let addedCreds =   await this.walletService.addCredential(accountData.userDetails.did, document.VcId, document.verifiableCredentials, accountData.token)              
                 await this.walletService.updateWalletUserToken(document.personID, accountData.token)
                 if (addedCreds.success) {
                     document.documentStatus = DocumentStatus.AttesterVerified;

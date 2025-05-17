@@ -7,11 +7,12 @@ import { TemplateFieldSchema } from 'src/document-fields/document-fields.schema'
 import { WalletModule } from '../wallet/wallet.module';
 import { SchemaModule } from 'src/schema/schema.module';
 import { CredentialsModule } from 'src/credentials/credentials.module';
+import { CommonModule } from 'src/common/common.module';
 
 @Module({
   imports: [
       MongooseModule.forFeature([{ name: 'DocumentTemplate', schema: DocumentTemplateSchema }, { name: 'TemplateField', schema: TemplateFieldSchema },]),
-      WalletModule,SchemaModule,CredentialsModule
+      WalletModule,SchemaModule,CredentialsModule,CommonModule
     ],
     exports: [MongooseModule,DocumentModule,DocumentService], // <-- this line is key!
   controllers: [DocumentController],

@@ -175,7 +175,13 @@ console.log(this.walletUrl, this.walletToken, "this.walletUrl, this.walletToken"
     }
     const headers = this.buildHeaders();
     const payload = { schemaId, properties: credentialData };
-
+   const keysToCheck = ['originalvc', 'originalvc1', 'original_vc', 'original_vc1'];
+keysToCheck.forEach(key => {
+  
+  if (payload.properties.hasOwnProperty(key) && payload.properties[key] == '') {
+       payload.properties[key] = {};
+  }
+});
     try {
       const response = await axios.post(url, payload, { headers });
 

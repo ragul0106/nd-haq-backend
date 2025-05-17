@@ -8,6 +8,7 @@ import { DigitizeSchema } from './digitize.schema';
 import { DocumentService } from '../document/document.service'; // Import DocumentService
 import {SchemaModule } from 'src/schema/schema.module';
 import { CredentialsModule } from 'src/credentials/credentials.module';
+import { CommonModule } from 'src/common/common.module';
 
 
 @Module({
@@ -16,7 +17,8 @@ import { CredentialsModule } from 'src/credentials/credentials.module';
     WalletModule,  // Import WalletService
     DocumentModule,  // Import DocumentService if needed
     SchemaModule,
-    CredentialsModule
+    CredentialsModule,
+    CommonModule
   ],
   controllers: [DigitizeController],
   providers: [DigitizeService,DocumentService],
