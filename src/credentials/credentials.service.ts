@@ -10,9 +10,9 @@ export class CredentialsService {
     private readonly credentialModel: Model<CredentialDocument>,
   ) {}
 
-  async getCredentials(personId: string): Promise<any> {
-    return await this.credentialModel.findOne({ personId }).exec();
-  }
+  // async getCredentials(personId: string): Promise<any> {
+  //   return await this.credentialModel.findOne({ personId }).exec();
+  // }
 
   async saveCredentials(personId: string, credentials: any): Promise<any> {
     const credential = new this.credentialModel({
@@ -23,7 +23,16 @@ export class CredentialsService {
     return await credential.save();
   }
   
-  async getCredentialsByCredentialId(credentialId: string): Promise<any> {
+  async getCredentialsByCredentialForOther(credentialId: string): Promise<any> {
     return await this.credentialModel.findOne({ credentialId }).exec();
+  }
+
+  async getCredentialsByCredentialId(credentialId: string): Promise<any> {
+   try {
+    const returnData = await this.credentialModel.findOne({ credentialId }).exec();     
+   return returnData
+   } catch (error) {
+    return null;
+   }
   }
 }

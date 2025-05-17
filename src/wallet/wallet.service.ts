@@ -3,7 +3,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Wallet, WalletDocument, WalletStatus } from './wallet.schema';
 import axios from 'axios';
+import { env } from '../config/env'; // adjust path as needed
 
+
+ 
 @Injectable()
 export class WalletService {
   private baseUrl: string;
@@ -12,6 +15,11 @@ export class WalletService {
   private userToken: string | null = null;
   private name: string | null = null;
   private accountId: string | null = null;
+  private readonly api_endpoint_agent = env.API_ENDPOINT_AGENT;
+  private readonly walletUrl = env.API_ENDPOINT_WALLET;
+  private readonly walletToken = env.API_WALLET_TOKEN
+  private readonly issueUrl = env.API_ISSUER_ENDPOINT;
+  private readonly issueToken = env.API_ISSUER_TOKEN;
   constructor(@InjectModel(Wallet.name) private walletModel: Model<WalletDocument>) {}
 
   setAppToken(token: string): void {
@@ -68,8 +76,13 @@ export class WalletService {
   }
 
   async createWallet(accountId: string, name: string): Promise<any> {
-    this.initializeApp('https://wallet-api.demo.dhiway.net/api/v1', 'c780754e-4322-4f27-8668-fb0224e126f1');
+  
+    if (!this.walletUrl || !this.walletToken) {
+      throw new Error('walletUrl or walletToken is not defined');
+    }
+    this.initializeApp(this.walletUrl, this.walletToken);
     const url = `${this.baseUrl}/custom-user/create`;
+console.log(this.walletUrl, this.walletToken, "this.walletUrl, this.walletToken");
 
     const headers = this.buildHeaders();
     const payload = { accountId, name };
@@ -89,7 +102,12 @@ export class WalletService {
   }
 
   async seedUser(name: string, accountId: string): Promise<any> {
-    this.initializeApp('https://wallet-api.demo.dhiway.net/api/v1', 'c780754e-4322-4f27-8668-fb0224e126f1');
+    if (!this.walletUrl || !this.walletToken) {
+      throw new Error('walletUrl or walletToken is not defined');
+    }
+    console.log(this.walletUrl, this.walletToken, "this.walletUrl, this.walletToken");
+    this.initializeApp(this.walletUrl, this.walletToken);
+
     const url = `${this.baseUrl}/custom-user/regenerate-token`;
     this.initializeUser(name, accountId);
 
@@ -111,7 +129,10 @@ export class WalletService {
   }
 
   async getCredentials(token: string): Promise<any> {
-    this.initializeApp('https://wallet-api.demo.dhiway.net/api/v1', 'c780754e-4322-4f27-8668-fb0224e126f1');
+     if (!this.walletUrl || !this.walletToken) {
+      throw new Error('walletUrl or walletToken is not defined');
+    }
+    this.initializeApp(this.walletUrl, this.walletToken);
     const url = `${this.baseUrl}/cred`;
     const headers = this.buildHeaders(token);
 
@@ -124,10 +145,14 @@ export class WalletService {
   }
 
   async addCredential(did: string, vcId: string, vc: any, token: any): Promise<any> {
-    this.initializeApp('https://wallet-api.demo.dhiway.net/api/v1', 'c780754e-4322-4f27-8668-fb0224e126f1');
+    if (!this.walletUrl || !this.walletToken) {
+      throw new Error('walletUrl or walletToken is not defined');
+    }
+    
+    this.initializeApp(this.walletUrl, this.walletToken);
     const url = `${this.baseUrl}/message/create/${did}`;
 
-    const headers = this.buildHeaders('c780754e-4322-4f27-8668-fb0224e126f1');
+    const headers = this.buildHeaders(this.walletToken);
     const payload = this.buildCredentialPayload(did, vcId, vc);
 
     try {
@@ -139,7 +164,10 @@ export class WalletService {
   }
 
   async issueVc(schemaId: string, credentialData: any): Promise<any> {
-    this.initializeApp('https://issuer-agent-api.demo.dhiway.net/api/v1', 'c780754e-4322-4f27-8668-fb0224e126f1');
+    if (!this.issueUrl || !this.issueToken) {
+      throw new Error('issueUrl or issueToken is not defined');
+    }
+    this.initializeApp(this.issueUrl, this.issueToken);
     const url = `${this.baseUrl}/cred`;
 
     if (!this.authToken) {
@@ -147,7 +175,13 @@ export class WalletService {
     }
     const headers = this.buildHeaders();
     const payload = { schemaId, properties: credentialData };
-
+   const keysToCheck = ['originalvc', 'originalvc1', 'original_vc', 'original_vc1'];
+keysToCheck.forEach(key => {
+  
+  if (payload.properties.hasOwnProperty(key) && payload.properties[key] == '') {
+       payload.properties[key] = {};
+  }
+});
     try {
       const response = await axios.post(url, payload, { headers });
 
@@ -157,7 +191,7 @@ export class WalletService {
       return response.data;
     } catch (error) {
 
-      return {};
+      return error
     }
   }
 
@@ -243,22 +277,24 @@ export class WalletService {
     }
   }
   async callAgenAppAPI(episode_id:string,status:number): Promise<any> { 
-
-    const url = 'https://test.haqdarshak.com/api/microservices/AttestWallet/updateEpisodeStatus';
+  
+    const apiUrl =this.api_endpoint_agent
+     const url = `${apiUrl}/microservices/AttestWallet/updateEpisodeStatus`;
     const headers = {
       'Content-Type': 'application/x-www-form-urlencoded',
       'Cookie': 'PHPSESSID=o8s3jt3ppuge798emkeudourf0',
     };
     const data = new URLSearchParams();
     data.append('episode_id', episode_id);
-    data.append('status', '7');
+    data.append('status', status.toString());
 
     try { 
       const response = await axios.post(url, data, { headers });
 
       return response.data;
     } catch (error) {
-
+      console.log('Error calling AgenAPP API:', error);
+      
       throw new HttpException('Error calling AgenAPP API', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   } 

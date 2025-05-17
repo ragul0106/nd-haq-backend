@@ -2,9 +2,11 @@ import { Injectable, NotFoundException, HttpException, HttpStatus } from '@nestj
 
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { SchemaModel, SchemaDocument } from './schema.schema';
+import { SchemaModel, SchemaDocument, SchemaStatus } from './schema.schema';
 import { CreateSchemaDto } from './create-schema.dto';
 import axios from 'axios';
+import { env } from 'src/config/env';
+
 
 
 
@@ -17,6 +19,8 @@ export class SchemaService {
   private userToken: string | null = null;
   private name: string | null = null;
   private accountId: string | null = null;
+  private issuerURL =env.API_ISSUER_ENDPOINT
+  private issuerToken =env.API_ISSUER_TOKEN
   constructor(
     @InjectModel(SchemaModel.name)
     private readonly schemaModel: Model<SchemaDocument>, 
@@ -60,7 +64,7 @@ export class SchemaService {
   }
 
   async findAll(): Promise<SchemaDocument[]>{
-    return this.schemaModel.find().exec();
+    return this.schemaModel.find({status:SchemaStatus.active}).exec();
 
   }
 
@@ -76,8 +80,8 @@ export class SchemaService {
 
 
 async addSchema(schemaData: any): Promise<string> {
-  this.setAppToken('c780754e-4322-4f27-8668-fb0224e126f1')
-  this.setAppURL('https://issuer-agent-api.demo.dhiway.net/api/v1');
+  this.setAppToken(this.issuerToken || '');
+  this.setAppURL(this.issuerURL || '');
   const url = `${this.baseUrl}/schema`;
   if (!this.authToken) {
     return this._handleMissingToken();
@@ -112,7 +116,7 @@ async addSchema(schemaData: any): Promise<string> {
 }
 
 async getSchema(schemaId: string): Promise<any> {
-  this.setAppURL('https://issuer-agent-api.demo.dhiway.net/api/v1');
+  this.setAppToken(this.issuerToken || '');
   const url = `${this.baseUrl}/schema/${schemaId}`;
 
   if (!this.authToken) {
@@ -146,5 +150,18 @@ private _handleRequestError(e: any, context: string) {
     message: e.message,
   };
 }
- 
+async updateSchemaStatus(id: string, status: string): Promise<any> {
+  const updatedSchema = await this.schemaModel.findByIdAndUpdate(
+    id,
+    { status },
+    { new: true },
+  );
+  if (!updatedSchema) {
+    throw new NotFoundException(`Schema with ID ${id} not found`);
+  }
+  return {
+    id: updatedSchema._id,
+    status: updatedSchema.status,
+  };
 }
+  };
