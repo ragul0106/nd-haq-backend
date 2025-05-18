@@ -151,6 +151,7 @@ export class DocumentService {
                 document.schemaId = digitizeData.documentName;
                 if (document.accountId == null || document.accountId == "" || document.accountId == undefined) {
                     accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
+                    console.log(accountData,"digitizeData");
                     if(accountData?.error=='User does not exist') {
                          await this.walletService.createWallet(document.personID + "@haqdarshak", document.personName);
                          accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
@@ -201,7 +202,8 @@ export class DocumentService {
                 let schemaData= await this.schemaService.getById(digitizeData.documentName)
                  let validSchema= await this.schemaValidationService.validateAndGenerateJSON(schemaData, test_cert_data);
                 document.dhiwaySchemaId = schemaData.DhiwaySchemaId
-                 let walletServiceData = await this.walletService.issueVc(schemaData?.DhiwaySchemaId, validSchema.result)                
+                 let walletServiceData = await this.walletService.issueVc(schemaData?.DhiwaySchemaId, validSchema.result)     
+                 console.log(walletServiceData, "walletServiceData");
                  if (walletServiceData?.error) {
                     throw new NotFoundException('Error in issuing VC');
                 }
@@ -209,7 +211,9 @@ export class DocumentService {
                 document.verifiableCredentials= walletServiceData?.vc;
                 document.credentialId = walletServiceData?.vc?.id;
                 accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
-              let addedCreds =   await this.walletService.addCredential(accountData.userDetails.did, document.VcId, document.verifiableCredentials, accountData.token)              
+                console.log(accountData, "accountData");
+              let addedCreds =   await this.walletService.addCredential(accountData.userDetails.did, document.VcId, document.verifiableCredentials, accountData.token)     
+                console.log(addedCreds, "addedCreds");
                 await this.walletService.updateWalletUserToken(document.personID, accountData.token)
                 if (addedCreds.success) {
                     document.documentStatus = DocumentStatus.AttesterVerified;

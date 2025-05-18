@@ -111,6 +111,7 @@ async addSchema(schemaData: any): Promise<string> {
 
     return response.data.schemaId;
   } catch (error) {
+    console.log(error,"DhiwaySchemaId");
     return "";
   }
 }

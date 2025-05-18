@@ -151,6 +151,7 @@ console.log(this.walletUrl, this.walletToken, "this.walletUrl, this.walletToken"
     
     this.initializeApp(this.walletUrl, this.walletToken);
     const url = `${this.baseUrl}/message/create/${did}`;
+console.log(url, "this.walletUrl, this.walletToken");
 
     const headers = this.buildHeaders(this.walletToken);
     const payload = this.buildCredentialPayload(did, vcId, vc);
@@ -167,6 +168,7 @@ console.log(this.walletUrl, this.walletToken, "this.walletUrl, this.walletToken"
     if (!this.issueUrl || !this.issueToken) {
       throw new Error('issueUrl or issueToken is not defined');
     }
+    console.log(this.issueUrl, this.issueToken);
     this.initializeApp(this.issueUrl, this.issueToken);
     const url = `${this.baseUrl}/cred`;
 
