@@ -82,8 +82,7 @@ export class WalletService {
     }
     this.initializeApp(this.walletUrl, this.walletToken);
     const url = `${this.baseUrl}/custom-user/create`;
-console.log(this.walletUrl, this.walletToken, "this.walletUrl, this.walletToken");
-
+ 
     const headers = this.buildHeaders();
     const payload = { accountId, name };
 
@@ -105,8 +104,7 @@ console.log(this.walletUrl, this.walletToken, "this.walletUrl, this.walletToken"
     if (!this.walletUrl || !this.walletToken) {
       throw new Error('walletUrl or walletToken is not defined');
     }
-    console.log(this.walletUrl, this.walletToken, "this.walletUrl, this.walletToken");
-    this.initializeApp(this.walletUrl, this.walletToken);
+     this.initializeApp(this.walletUrl, this.walletToken);
 
     const url = `${this.baseUrl}/custom-user/regenerate-token`;
     this.initializeUser(name, accountId);
@@ -151,8 +149,7 @@ console.log(this.walletUrl, this.walletToken, "this.walletUrl, this.walletToken"
     
     this.initializeApp(this.walletUrl, this.walletToken);
     const url = `${this.baseUrl}/message/create/${did}`;
-console.log(url, "this.walletUrl, this.walletToken");
-
+ 
     const headers = this.buildHeaders(this.walletToken);
     const payload = this.buildCredentialPayload(did, vcId, vc);
 
@@ -160,7 +157,7 @@ console.log(url, "this.walletUrl, this.walletToken");
       const response = await axios.post(url, payload, { headers });
       return response.data;
     } catch (e) {
-      return this.handleRequestError(e, 'addCredential');
+       return this.handleRequestError(e, 'addCredential');
     }
   }
 
@@ -168,8 +165,7 @@ console.log(url, "this.walletUrl, this.walletToken");
     if (!this.issueUrl || !this.issueToken) {
       throw new Error('issueUrl or issueToken is not defined');
     }
-    console.log(this.issueUrl, this.issueToken);
-    this.initializeApp(this.issueUrl, this.issueToken);
+     this.initializeApp(this.issueUrl, this.issueToken);
     const url = `${this.baseUrl}/cred`;
 
     if (!this.authToken) {
@@ -179,7 +175,7 @@ console.log(url, "this.walletUrl, this.walletToken");
     const payload = { schemaId, properties: credentialData };
    const keysToCheck = ['originalvc', 'originalvc1', 'original_vc', 'original_vc1'];
 keysToCheck.forEach(key => {
-  
+
   if (payload.properties.hasOwnProperty(key) && payload.properties[key] == '') {
        payload.properties[key] = {};
   }
@@ -295,8 +291,7 @@ keysToCheck.forEach(key => {
 
       return response.data;
     } catch (error) {
-      console.log('Error calling AgenAPP API:', error);
-      
+       
       throw new HttpException('Error calling AgenAPP API', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   } 

@@ -1,8 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import * as mime from 'mime-types';
+import axios from 'axios';
 
 @Injectable()
 export class SchemaValidationService {
-  validateAndGenerateJSON(schema: any, inputData: Record<string, any>) {
+ async validateAndGenerateJSON(schema: any, inputData: Record<string, any>,imageUrl:string) {
+    
+    const originalVC = await this.fetchImageAsOriginalVC(imageUrl);
+    console.log(typeof originalVC,"imageUrl");
+
     const result: Record<string, any> = {};
     const missingRequiredFields: string[] = [];
 
@@ -48,6 +54,13 @@ export class SchemaValidationService {
         }
       }
     }
+    console.log(schema);
+    
+if(result.originalvc){
+    result.originalvc = originalVC;
+}else if(result.original_vc){
+    result.original_vc = originalVC;
+}
 
     return {
       result,
@@ -60,5 +73,27 @@ export class SchemaValidationService {
       return propertySchema.type;
     }
     return 'string'; // Fallback default
+  }
+
+   async fetchImageAsOriginalVC(imageUrl: string): Promise<Record<string, any>> {
+    const response = await axios.get(imageUrl, {
+      responseType: 'arraybuffer',
+    });
+
+    const buffer = Buffer.from(response.data, 'binary');
+    const base64Content = buffer.toString('base64');
+
+    const mimetype = response.headers['content-type'] || mime.lookup(imageUrl) || 'application/octet-stream';
+    const originalname = imageUrl.split('/').pop() || 'image';
+    const encoding = '7bit'; // You can refine this if needed
+    const size = buffer.length;
+
+    return {
+      content: base64Content,
+      encoding,
+      mimetype,
+      originalname,
+      size,
+    };
   }
 }
