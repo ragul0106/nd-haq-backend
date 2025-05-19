@@ -181,9 +181,7 @@ async getCredentialsNew(@Param('id') id: string, @Res() res: Response) {
   const lookupId = isJson || isVc ? id.replace(/\.(json|vc)$/i, '') : id;
 
   const data = await this.documentServices.getVerifiableCredential(lookupId);
-  if (!data) {
-    return res.status(404).json({ message: 'Document not found', data: [] });
-  }
+  if (data) {
 
   if (isJson || isVc) {
     try {
@@ -205,6 +203,14 @@ async getCredentialsNew(@Param('id') id: string, @Res() res: Response) {
     console.error('Error generating HTML view:', error);
     return res.status(500).json({ message: 'Error generating view' });
   }
+
+  }else if( !data && (isJson || isVc)){
+        return res.status(404).json({ message: 'Document not found', data: [] });
+  }else{
+     const html = await this.documentServices.dataNotFoundHtml()
+    return res.header('Content-Type', 'text/html').send(html);
+  }
+
 }
   }
   

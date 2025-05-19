@@ -57,7 +57,7 @@ export class DocumentService {
     async getAllDocument(query: any = {}): Promise<DocumentTemplateType[]> {
         try {
 
-            const { page = 1, limit = 100 } = query;
+            const { page = 1, limit = 1000 } = query;
             const skip = (page - 1) * limit;
             const allDocuments = await this.documentModel
                 .find({ ...query, isActive: true })
@@ -666,5 +666,50 @@ const vcData = JSON.parse(credentialVC);
   `;
 
 }
-
+ 
+async dataNotFoundHtml(): Promise<string> {
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <title>Data Not Found</title>
+      <style>
+        body {
+          font-family: "Helvetica Neue", sans-serif;
+          background-color: #f7f7f7;
+          margin: 0;
+          padding: 40px;
+        }
+        .not-found-container {
+          background: #fff;
+          border-radius: 8px;
+          max-width: 500px;
+          margin: 80px auto;
+          padding: 40px 30px;
+          text-align: center;
+          box-shadow: 0 0 10px rgba(0,0,0,0.07);
+        }
+        .not-found-title {
+          font-size: 32px;
+          color: #c0392b;
+          margin-bottom: 16px;
+        }
+        .not-found-message {
+          font-size: 18px;
+          color: #555;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="not-found-container">
+        <div class="not-found-title">Data Not Found</div>
+        <div class="not-found-message">
+          Sorry, the requested data could not be found.
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
 }
