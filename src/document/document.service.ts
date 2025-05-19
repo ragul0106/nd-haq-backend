@@ -17,12 +17,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import axios from 'axios';
 import { logger } from '../logger';
-import { json } from 'stream/consumers';
-import { log } from 'console';
-import { SchemaValidationService } from 'src/common/schema-validation.service';
+  import { SchemaValidationService } from 'src/common/schema-validation.service';
 import { env } from '../config/env'; // adjust path as needed
 import * as QRCode from 'qrcode';
-@Injectable()
+ @Injectable()
 export class DocumentService {
     
     constructor(
@@ -138,15 +136,16 @@ export class DocumentService {
 
     async digitizeDocument(documentId: string, digitizeData: any): Promise<DocumentTemplateType> {
         try {
-            const document = await this.documentModel.findOne({ documentId, isActive: true }).populate('schemaId', 'DhiwaySchemaId').exec();
+             const document = await this.documentModel.findOne({ documentId, isActive: true }).populate('schemaId', 'DhiwaySchemaId').exec();
             if (!document) {
                 throw new NotFoundException('Document not found');
             }
             let accountData;
             document.isApproved = true;
-            
+         
             logger.info(JSON.stringify(digitizeData));
-
+            console.log(digitizeData.digitizationStatus);
+            
             document.digitizedData = digitizeData.jsonData;
             if (digitizeData.digitizationStatus == 'digitise') {
                 document.attesterId = digitizeData.attesterId;
@@ -198,14 +197,15 @@ export class DocumentService {
             } else if (digitizeData.digitizationStatus == 'reject') {
                 document.documentStatus = DocumentStatus.MakerRejected;
                 this.walletService.callAgenAppAPI(document.caseId, 1);
-            } else if (digitizeData.digitizationStatus == 'issueCredential') {   
-                    let test_cert_data = digitizeData.jsonData                  
-                let schemaData= await this.schemaService.getById(digitizeData.documentName)
-                 let validSchema= await this.schemaValidationService.validateAndGenerateJSON(schemaData, test_cert_data, env.API_ENDPOINT+ document.imageUrl);
+            } else if (digitizeData.digitizationStatus == 'issueCredential') {
+                let test_cert_data = digitizeData.jsonData
+                let schemaData = await this.schemaService.getById(digitizeData.documentName)
+                let validSchema = await this.schemaValidationService.validateAndGenerateJSON(schemaData, test_cert_data, env.API_ENDPOINT + document.imageUrl);
                 document.dhiwaySchemaId = schemaData.DhiwaySchemaId
-                 let walletServiceData = await this.walletService.issueVc(schemaData?.DhiwaySchemaId, validSchema.result)     
-                 console.log(walletServiceData, "walletServiceData");
-                 if (walletServiceData?.error) {
+                
+                                 let walletServiceData = await this.walletService.issueVc(schemaData?.DhiwaySchemaId, validSchema.result)   
+                                   console.log(walletServiceData,"walletServiceData");  
+                  if (walletServiceData?.error) {
                     throw new NotFoundException('Error in issuing VC');
                 }
                 document.VcId = walletServiceData.identifier; // Assuming walletServiceData is a string, directly assign it
@@ -213,6 +213,8 @@ export class DocumentService {
                 document.credentialId = walletServiceData?.vc?.id;
                 accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
                let addedCreds =   await this.walletService.addCredential(accountData.userDetails.did, document.VcId, document.verifiableCredentials, accountData.token)     
+               console.log(addedCreds,"addedCreds");
+               
                  await this.walletService.updateWalletUserToken(document.personID, accountData.token)
                 if (addedCreds.success) {
                     document.documentStatus = DocumentStatus.AttesterVerified;
@@ -465,7 +467,7 @@ async getDocumentByRoleAndAssignedAttester(role: string, assignedAttester: strin
     }
 }
 async generateCredentialHtmlView(credentialVC: string, viewUrl: string): Promise<string> {
-  const vcData = JSON.parse(credentialVC);
+const vcData = JSON.parse(credentialVC);
   const qrDataUrl = await QRCode.toDataURL(viewUrl);
 
   const formFields = Object.entries(vcData.credentialSubject).map(([key, value]) => {
@@ -475,26 +477,47 @@ async generateCredentialHtmlView(credentialVC: string, viewUrl: string): Promise
       typeof value === 'object' &&
       value !== null &&
       'mimetype' in value &&
-      typeof (value as any).mimetype === 'string' &&
-      (value as any).mimetype.startsWith('image/')
+      typeof (value as any).mimetype === 'string'
     ) {
+      const mimetype = (value as any).mimetype;
       const base64 = (value as any).content;
-      const src = `data:${(value as any).mimetype};base64,${base64}`;
-      return `
-        <div class="form-group">
-          <label for="${key}">${key}</label>
-          <div>
-            <img 
-              src="${src}" 
-              alt="${(value as any).originalname}" 
-              style="max-width: 200px; max-height: 200px; cursor: pointer;" 
-              onclick="showImageModal('${src}', '${(value as any).originalname}')"
-            />
+      const filename = (value as any).originalname || 'document';
+
+      // Image preview + modal
+      if (mimetype.startsWith('image/')) {
+        const src = `data:${mimetype};base64,${base64}`;
+        return `
+          <div class="form-group">
+            <label for="${key}">${key}</label>
+            <div>
+              <img 
+                src="${src}" 
+                alt="${filename}" 
+                class="thumbnail"
+                onclick="showImageModal('${src}', '${filename}')"
+              />
+            </div>
           </div>
-        </div>
-      `;
+        `;
+      }
+
+      // PDF link
+      if (mimetype === 'application/pdf') {
+        const pdfUrl = `data:${mimetype};base64,${base64}`;
+        return `
+          <div class="form-group">
+            <label for="${key}">${key}</label>
+            <div>
+              <a href="${pdfUrl}" download="${filename}" style="color: #1a0dab; text-decoration: underline;">
+                Download PDF: ${filename}
+              </a>
+            </div>
+          </div>
+        `;
+      }
     }
 
+    // Default field
     return `
       <div class="form-group">
         <label for="${key}">${key}</label>
@@ -507,7 +530,7 @@ async generateCredentialHtmlView(credentialVC: string, viewUrl: string): Promise
     <!DOCTYPE html>
     <html lang="en">
     <head>
-      <meta charset="UTF-8">
+      <meta charset="UTF-8" />
       <title>Wallet Credential</title>
       <style>
         body {
@@ -521,6 +544,7 @@ async generateCredentialHtmlView(credentialVC: string, viewUrl: string): Promise
           font-weight: bold;
           color: #1a1a40;
           margin-bottom: 30px;
+          text-align: center;
         }
         .container {
           display: flex;
@@ -565,6 +589,17 @@ async generateCredentialHtmlView(credentialVC: string, viewUrl: string): Promise
           background-color: #f0f0f0;
           color: #666;
         }
+        .thumbnail {
+          max-width: 120px;
+          max-height: 120px;
+          cursor: pointer;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          transition: transform 0.2s;
+        }
+        .thumbnail:hover {
+          transform: scale(1.05);
+        }
         #imageModal {
           display: none;
           position: fixed;
@@ -578,6 +613,7 @@ async generateCredentialHtmlView(credentialVC: string, viewUrl: string): Promise
         #imageModal img {
           max-width: 90%;
           max-height: 90%;
+          border-radius: 10px;
         }
         #imageModal span {
           position: absolute;
@@ -598,25 +634,28 @@ async generateCredentialHtmlView(credentialVC: string, viewUrl: string): Promise
       <div class="header">Wallet Credential</div>
       <div class="container">
         <div class="qr-container">
-          <img src="${qrDataUrl}" alt="QR Code" height="250" width="250" />
+          <img src="${qrDataUrl}" alt="QR Code" />
         </div>
         <div class="form-container">
-          <h1>${vcData.credentialSchema?.title?.split(":")[0] || 'Credential'}</h1>
+          <h2>${vcData.credentialSchema?.title?.split(":")[0] || 'Credential'}</h2>
           ${formFields}
         </div>
       </div>
+
       <div id="imageModal">
         <span onclick="closeImageModal()">&times;</span>
-        <img id="modalImage" src="" alt="" />
-       </div>
+        <div style="text-align:center">
+          <img id="modalImage" src="" alt="Full Image" />
+          <p id="modalCaption"></p>
+        </div>
+      </div>
+
       <script>
         function showImageModal(src, caption) {
-          const modal = document.getElementById("imageModal");
-          const modalImg = document.getElementById("modalImage");
- 
-          modal.style.display = "flex";
-          modalImg.src = src;
-         }
+          document.getElementById("modalImage").src = src;
+          document.getElementById("modalCaption").innerText = caption;
+          document.getElementById("imageModal").style.display = "flex";
+        }
 
         function closeImageModal() {
           document.getElementById("imageModal").style.display = "none";
@@ -625,6 +664,7 @@ async generateCredentialHtmlView(credentialVC: string, viewUrl: string): Promise
     </body>
     </html>
   `;
+
 }
 
 }
