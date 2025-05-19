@@ -20,6 +20,8 @@ import { logger } from '../logger';
 import { json } from 'stream/consumers';
 import { log } from 'console';
 import { SchemaValidationService } from 'src/common/schema-validation.service';
+import { env } from '../config/env'; // adjust path as needed
+import * as QRCode from 'qrcode';
 @Injectable()
 export class DocumentService {
     
@@ -151,8 +153,7 @@ export class DocumentService {
                 document.schemaId = digitizeData.documentName;
                 if (document.accountId == null || document.accountId == "" || document.accountId == undefined) {
                     accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
-                    console.log(accountData,"digitizeData");
-                    if(accountData?.error=='User does not exist') {
+                     if(accountData?.error=='User does not exist') {
                          await this.walletService.createWallet(document.personID + "@haqdarshak", document.personName);
                          accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
                          document.accountId = accountData.userDetails.accountId
@@ -200,7 +201,7 @@ export class DocumentService {
             } else if (digitizeData.digitizationStatus == 'issueCredential') {   
                     let test_cert_data = digitizeData.jsonData                  
                 let schemaData= await this.schemaService.getById(digitizeData.documentName)
-                 let validSchema= await this.schemaValidationService.validateAndGenerateJSON(schemaData, test_cert_data);
+                 let validSchema= await this.schemaValidationService.validateAndGenerateJSON(schemaData, test_cert_data, env.API_ENDPOINT+ document.imageUrl);
                 document.dhiwaySchemaId = schemaData.DhiwaySchemaId
                  let walletServiceData = await this.walletService.issueVc(schemaData?.DhiwaySchemaId, validSchema.result)     
                  console.log(walletServiceData, "walletServiceData");
@@ -211,10 +212,8 @@ export class DocumentService {
                 document.verifiableCredentials= walletServiceData?.vc;
                 document.credentialId = walletServiceData?.vc?.id;
                 accountData = await this.walletService.seedUser(document.personName, document.personID + "@haqdarshak");
-                console.log(accountData, "accountData");
-              let addedCreds =   await this.walletService.addCredential(accountData.userDetails.did, document.VcId, document.verifiableCredentials, accountData.token)     
-                console.log(addedCreds, "addedCreds");
-                await this.walletService.updateWalletUserToken(document.personID, accountData.token)
+               let addedCreds =   await this.walletService.addCredential(accountData.userDetails.did, document.VcId, document.verifiableCredentials, accountData.token)     
+                 await this.walletService.updateWalletUserToken(document.personID, accountData.token)
                 if (addedCreds.success) {
                     document.documentStatus = DocumentStatus.AttesterVerified;
                     digitizeData.documentObjectID = document._id;
@@ -242,8 +241,7 @@ export class DocumentService {
              
             return await document.save();
         } catch (error) {      
-            console.log("error", error);
-                   
+                    
             logger.error('Error in digitizing document:', error);
             if (error instanceof HttpException) throw error;
             throw new InternalServerErrorException('Error digitizing document');
@@ -420,8 +418,7 @@ async downloadImageToServer(imageUrl: string): Promise<string> {
       writer.on('finish', () => {
         // Return the URL of the saved image
         const publicUrl = `/${saveFolder}/${filename}`;
-        console.log(publicUrl,"publicUrl")
-        resolve(publicUrl);
+         resolve(publicUrl);
       });
       writer.on('error', reject);
     });
@@ -431,8 +428,7 @@ async downloadImageToServer(imageUrl: string): Promise<string> {
 }
 async getVerifiableCredential(credentialId: string): Promise<any> {
     try {
-        console.log("credentialId", credentialId);
-               const credential = await this.credentialsService.getCredentialsByCredentialId(credentialId);
+                const credential = await this.credentialsService.getCredentialsByCredentialId(credentialId);
        return credential;
     } catch (error) {
         if (error instanceof HttpException) throw error;    
@@ -442,8 +438,7 @@ async getVerifiableCredential(credentialId: string): Promise<any> {
 
 async getVerifiableCredentialById(credentialId: string): Promise<any> {
     try {
-        console.log("credentialId111", credentialId);
-       const credential = await this.credentialsService.getCredentialsByCredentialForOther(credentialId);
+        const credential = await this.credentialsService.getCredentialsByCredentialForOther(credentialId);
        return credential;
     } catch (error) {
         if (error instanceof HttpException) throw error;    
@@ -469,4 +464,167 @@ async getDocumentByRoleAndAssignedAttester(role: string, assignedAttester: strin
         throw new InternalServerErrorException('Error fetching documents by role and assigned attester');
     }
 }
+async generateCredentialHtmlView(credentialVC: string, viewUrl: string): Promise<string> {
+  const vcData = JSON.parse(credentialVC);
+  const qrDataUrl = await QRCode.toDataURL(viewUrl);
+
+  const formFields = Object.entries(vcData.credentialSubject).map(([key, value]) => {
+    if (key === '@context') return '';
+
+    if (
+      typeof value === 'object' &&
+      value !== null &&
+      'mimetype' in value &&
+      typeof (value as any).mimetype === 'string' &&
+      (value as any).mimetype.startsWith('image/')
+    ) {
+      const base64 = (value as any).content;
+      const src = `data:${(value as any).mimetype};base64,${base64}`;
+      return `
+        <div class="form-group">
+          <label for="${key}">${key}</label>
+          <div>
+            <img 
+              src="${src}" 
+              alt="${(value as any).originalname}" 
+              style="max-width: 200px; max-height: 200px; cursor: pointer;" 
+              onclick="showImageModal('${src}', '${(value as any).originalname}')"
+            />
+          </div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="form-group">
+        <label for="${key}">${key}</label>
+        <input type="text" id="${key}" name="${key}" value="${value}" readonly />
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <title>Wallet Credential</title>
+      <style>
+        body {
+          font-family: "Helvetica Neue", sans-serif;
+          background-color: #f7f7f7;
+          margin: 0;
+          padding: 20px;
+        }
+        .header {
+          font-size: 28px;
+          font-weight: bold;
+          color: #1a1a40;
+          margin-bottom: 30px;
+        }
+        .container {
+          display: flex;
+          background-color: white;
+          padding: 40px;
+          border-radius: 8px;
+          max-width: 900px;
+          margin: auto;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+        .qr-container {
+          flex: 0 0 250px;
+          margin-right: 40px;
+        }
+        .qr-container img {
+          width: 250px;
+          height: 250px;
+          border-radius: 10px;
+        }
+        .form-container {
+          flex: 1;
+        }
+        .form-group {
+          margin-bottom: 20px;
+        }
+        label {
+          display: block;
+          font-weight: 600;
+          margin-bottom: 5px;
+          color: #2c2c54;
+        }
+        input {
+          width: 100%;
+          padding: 10px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          background-color: #f9f9f9;
+          color: #333;
+          font-size: 14px;
+        }
+        input[readonly] {
+          background-color: #f0f0f0;
+          color: #666;
+        }
+        #imageModal {
+          display: none;
+          position: fixed;
+          top: 0; left: 0;
+          width: 100%; height: 100%;
+          background-color: rgba(0, 0, 0, 0.8);
+          z-index: 1000;
+          justify-content: center;
+          align-items: center;
+        }
+        #imageModal img {
+          max-width: 90%;
+          max-height: 90%;
+        }
+        #imageModal span {
+          position: absolute;
+          top: 20px;
+          right: 30px;
+          font-size: 30px;
+          color: white;
+          cursor: pointer;
+        }
+        #imageModal p {
+          color: white;
+          text-align: center;
+          margin-top: 10px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">Wallet Credential</div>
+      <div class="container">
+        <div class="qr-container">
+          <img src="${qrDataUrl}" alt="QR Code" height="250" width="250" />
+        </div>
+        <div class="form-container">
+          <h1>${vcData.credentialSchema?.title?.split(":")[0] || 'Credential'}</h1>
+          ${formFields}
+        </div>
+      </div>
+      <div id="imageModal">
+        <span onclick="closeImageModal()">&times;</span>
+        <img id="modalImage" src="" alt="" />
+       </div>
+      <script>
+        function showImageModal(src, caption) {
+          const modal = document.getElementById("imageModal");
+          const modalImg = document.getElementById("modalImage");
+ 
+          modal.style.display = "flex";
+          modalImg.src = src;
+         }
+
+        function closeImageModal() {
+          document.getElementById("imageModal").style.display = "none";
+        }
+      </script>
+    </body>
+    </html>
+  `;
+}
+
 }
