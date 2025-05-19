@@ -243,6 +243,7 @@ export class DocumentService {
              
             return await document.save();
         } catch (error) {      
+                    console.log(error,"error");
                     
             logger.error('Error in digitizing document:', error);
             if (error instanceof HttpException) throw error;
