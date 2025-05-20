@@ -21,6 +21,11 @@ async function bootstrap() {
     },
   });
 
+   app.enableCors({
+    origin: '*', // Allow React frontend
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
+    credentials: true,
+  });
   // Response handler
   app.useGlobalInterceptors(new ResponseInterceptor());
 
