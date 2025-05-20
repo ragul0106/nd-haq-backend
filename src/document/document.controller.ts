@@ -73,14 +73,14 @@ import { env } from 'src/config/env';
       return { message: 'Documents fetched successfully', data };
     }
 
-    @Get('/read/documentByRole/:role/')
-    async getDocumentByRole(@Param('role') role: string) {
-      const data = await this.documentServices.getDocumentByRole(role);
-      return { message: 'Documents fetched successfully', data };
-    }
+    // @Get('/read/documentByRole/:role/')
+    // async getDocumentByRole(@Param('role') role: string) {
+    //   const data = await this.documentServices.getDocumentByRole(role);
+    //   return { message: 'Documents fetched successfully', data };
+    // }
 
     @Get('/read/documentByRole/:role/:id')
-    async getDocumentByAssignedID(@Param('role') role: string, @Param('id') id: string) {
+    async getDocumentByAssignedID(@Param('role') role: string, @Param('id') id: string,@Query() query: any) {
       const data = await this.documentServices.getDocumentByRoleAndAssignedAttester(role, id);
       return { message: 'Documents fetched successfully', data };
     }
