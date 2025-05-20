@@ -57,17 +57,16 @@ export class DocumentService {
     async getAllDocument(query: any = {}): Promise<DocumentTemplateType[]> {
         try {
 
-            const { page = 1, limit = 1000 } = query;
-            const skip = (page - 1) * limit;
-            const allDocuments = await this.documentModel
-                .find({ ...query, isActive: true })
-                .skip(skip)
-                .limit(Number(limit))
-                .populate('fields')
-                .populate('createdBy')
-                .populate('updatedBy')
-                .exec();
-
+         const { page = 1, limit = 1000, ...filters } = query;
+        const skip = (page - 1) * limit;
+           const allDocuments = await this.documentModel
+    .find({ ...filters, isActive: true })
+    .skip(skip)
+    .limit(Number(limit))
+    .populate('fields')
+    .populate('createdBy')
+    .populate('updatedBy')
+    .exec();
             return allDocuments;
         } catch (error) {
             if (error instanceof HttpException) throw error;
