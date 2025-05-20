@@ -93,7 +93,7 @@ export class DocumentService {
         page: Number(page),            // current page
         pageSize: docs.length,         // # returned on this page
         totalPages: Math.ceil(total / limit),
-         allDocuments
+        allDocuments
       }
 
       return returnedDocuments;
@@ -478,7 +478,7 @@ export class DocumentService {
   }
   async getDocumentByRoleAndAssignedAttester(role: string, assignedAttester: string): Promise<DocumentTemplateType[]> {
     try {
-       
+
       const documents = await this.documentModel
         .find({ attesterId: assignedAttester, isActive: true })
         .populate('fields')
@@ -630,34 +630,42 @@ export class DocumentService {
         .thumbnail:hover {
           transform: scale(1.05);
         }
-        #imageModal {
-          display: none;
-          position: fixed;
-          top: 0; left: 0;
-          width: 100%; height: 100%;
-          background-color: rgba(0, 0, 0, 0.8);
-          z-index: 1000;
-          justify-content: center;
-          align-items: center;
-        }
-        #imageModal img {
-          max-width: 90%;
-          max-height: 90%;
-          border-radius: 10px;
-        }
-        #imageModal span {
-          position: absolute;
-          top: 20px;
-          right: 30px;
-          font-size: 30px;
-          color: white;
-          cursor: pointer;
-        }
-        #imageModal p {
-          color: white;
-          text-align: center;
-          margin-top: 10px;
-        }
+       #imageModal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  overflow-y: scroll;
+  padding: 40px 20px;
+  box-sizing: border-box;
+  justify-content: center;
+}
+
+#imageModal img {
+   
+  display: block;
+  margin: 0 auto;
+  border-radius: 10px;
+
+}
+
+#imageModal span {
+  position: fixed;
+  top: 20px;
+  right: 30px;
+  font-size: 30px;
+  color: white;
+  cursor: pointer;
+  z-index: 1001;
+}
+
+#imageModal p {
+  color: white;
+  text-align: center;
+  margin-top: 10px;
+}
       </style>
     </head>
     <body>
@@ -685,10 +693,14 @@ export class DocumentService {
           document.getElementById("modalImage").src = src;
           document.getElementById("modalCaption").innerText = caption;
           document.getElementById("imageModal").style.display = "flex";
+              document.body.style.overflow = "hidden"; // Prevent background scroll
+
         }
 
         function closeImageModal() {
           document.getElementById("imageModal").style.display = "none";
+              document.body.style.overflow = ""; // Re-enable scroll
+
         }
       </script>
     </body>
