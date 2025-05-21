@@ -14,6 +14,20 @@ async function bootstrap() {
     },
   });
 
+  app.enableCors({
+  origin: '*', // or '*', if acceptable
+  methods: 'GET,POST,PUT,DELETE,OPTIONS',
+  allowedHeaders: [
+    'Origin',
+    'X-Requested-With',
+    'Content-Type',
+    'Accept',
+    'Authorization',
+    'ngrok-skip-browser-warning', // Add this line
+  ],
+  credentials: true, // if cookies/auth headers are involved
+  maxAge: 86400,
+});
   //response handler
   app.useGlobalInterceptors(new ResponseInterceptor());
 
