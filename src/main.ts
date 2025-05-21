@@ -25,6 +25,7 @@ async function bootstrap() {
     origin: '*', // Allow React frontend
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
     credentials: true,
+    preflightContinue: false, // stop here for OPTIONS
   });
   // Response handler
   app.useGlobalInterceptors(new ResponseInterceptor());

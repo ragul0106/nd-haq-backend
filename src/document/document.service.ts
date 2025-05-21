@@ -57,18 +57,41 @@ export class DocumentService {
   async getAllDocument(query: any = {}): Promise<any> {
     try {
 
-      const { page = 1, limit = 1000, ...filters } = query;
+      const { page = 1, limit = 1000, searchText = '', documentStatus = 'all', ...filters } = query;
       const skip = (page - 1) * limit;
 
-      const allDocuments = await this.documentModel
-        .find({ ...filters, isActive: true })
-        .skip(skip)
-        .limit(Number(limit))
-        .populate('fields')
-        .populate('createdBy')
-        .populate('updatedBy')
-        .exec();
 
+
+      let allDocuments: DocumentTemplateType[] = [];
+      if (searchText) {
+        filters.name = { $regex: searchText, $options: 'i' }; // 'i' for case-insensitive
+      }
+
+      if (documentStatus != 'all') {
+        filters.documentStatus = documentStatus;
+        console.log('Populates:', query);
+
+        allDocuments = await this.documentModel
+          .find({ ...filters, isActive: true })
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(Number(limit))
+          .populate('fields')
+          .populate('createdBy')
+          .populate('updatedBy')
+          .exec() as DocumentTemplateType[];
+      } else {
+        allDocuments = await this.documentModel
+          .find({ ...filters, isActive: true })
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(Number(limit))
+          .populate('fields')
+          .populate('createdBy')
+          .populate('updatedBy')
+          .exec() as DocumentTemplateType[];
+
+      }
 
       const match = { ...filters, isActive: true };
 
@@ -99,6 +122,8 @@ export class DocumentService {
       return returnedDocuments;
     } catch (error) {
       if (error instanceof HttpException) throw error;
+      console.log(error, "error");
+
       throw new InternalServerErrorException('Error fetching documents');
     }
   }
@@ -230,7 +255,6 @@ export class DocumentService {
         let schemaData = await this.schemaService.getById(digitizeData.documentName)
         let validSchema = await this.schemaValidationService.validateAndGenerateJSON(schemaData, test_cert_data, env.API_ENDPOINT + document.imageUrl);
         document.dhiwaySchemaId = schemaData.DhiwaySchemaId
-
         let walletServiceData = await this.walletService.issueVc(schemaData?.DhiwaySchemaId, validSchema.result)
         console.log(walletServiceData, "walletServiceData");
         if (walletServiceData?.error) {
@@ -262,7 +286,7 @@ export class DocumentService {
 
 
       } else if (digitizeData.digitizationStatus == 'attesterReject') {
-        document.documentStatus = DocumentStatus.MakerPending;
+        document.documentStatus = DocumentStatus.AttesterRejected;
         this.walletService.callAgenAppAPI(document.caseId, 1);
       } else if (digitizeData.digitizationStatus == 'attesterRework') {
         document.documentStatus = DocumentStatus.MakerPending;
@@ -476,15 +500,36 @@ export class DocumentService {
       return {}
     }
   }
-  async getDocumentByRoleAndAssignedAttester(role: string, assignedAttester: string): Promise<DocumentTemplateType[]> {
+  async getDocumentByRoleAndAssignedAttester(role: string, assignedAttester: string, query: any = {}): Promise<DocumentTemplateType[]> {
     try {
+      
+      const { page = 1, limit = 1000, searchText = '', documentStatus = 'all', ...restFilters } = query;
+
+      const skip = (page - 1) * limit;
+
+      const filters: any = {
+        attesterId: assignedAttester,
+        isActive: true,
+        ...restFilters,
+      };
+
+      // Add search by name (case-insensitive)
+      if (searchText) {
+        filters.name = { $regex: searchText, $options: 'i' };
+      }
 
       const documents = await this.documentModel
-        .find({ attesterId: assignedAttester, isActive: true })
+        .find(filters)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
         .populate('fields')
         .populate('createdBy')
         .populate('updatedBy')
         .exec();
+
+        //need total count of documents
+        
 
       if (!documents || documents.length === 0) {
         throw new NotFoundException('No documents found for this role and assigned attester');

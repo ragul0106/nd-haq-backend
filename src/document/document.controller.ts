@@ -81,7 +81,7 @@ import { env } from 'src/config/env';
 
     @Get('/read/documentByRole/:role/:id')
     async getDocumentByAssignedID(@Param('role') role: string, @Param('id') id: string,@Query() query: any) {
-      const data = await this.documentServices.getDocumentByRoleAndAssignedAttester(role, id);
+      const data = await this.documentServices.getDocumentByRoleAndAssignedAttester(role, id,query);
       return { message: 'Documents fetched successfully', data };
     }
     @Put('/addComments/:id')

@@ -30,6 +30,7 @@ export class UserService {
                     existingUser.accountCreationReason = createUserDto.accountCreationReason || '';
                     existingUser.designation = createUserDto.designation || '';
                     existingUser.organisation = createUserDto.organisation || '';
+                    existingUser.name = createUserDto.name || '';
                     return existingUser.save();
                 }
                 
