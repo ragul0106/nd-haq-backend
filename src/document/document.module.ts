@@ -8,11 +8,11 @@ import { WalletModule } from '../wallet/wallet.module';
 import { SchemaModule } from 'src/schema/schema.module';
 import { CredentialsModule } from 'src/credentials/credentials.module';
 import { CommonModule } from 'src/common/common.module';
-
+import { UserModule } from 'src/user/user.module';
 @Module({
   imports: [
       MongooseModule.forFeature([{ name: 'DocumentTemplate', schema: DocumentTemplateSchema }, { name: 'TemplateField', schema: TemplateFieldSchema },]),
-      WalletModule,SchemaModule,CredentialsModule,CommonModule
+      WalletModule,SchemaModule,CredentialsModule,CommonModule,UserModule
     ],
     exports: [MongooseModule,DocumentModule,DocumentService], // <-- this line is key!
   controllers: [DocumentController],

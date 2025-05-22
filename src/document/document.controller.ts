@@ -34,18 +34,21 @@ import { env } from 'src/config/env';
     }
   
     @Get('/read/all')
+        @UseGuards(JwtAuthGuard)
     async getAllDocument(@Query() query: any) {
       const data = await this.documentServices.getAllDocument(query);
       return { message: 'Documents fetched successfully', data };
     }
   
     @Get('/read/:id')
+        @UseGuards(JwtAuthGuard)
     async getSingleDocument(@Param('id') id: string) {
       const data = await this.documentServices.getSingleDocument(id);
       return { message: 'Document fetched successfully', data };
     }
   
     @Patch('/update/:id')
+    @UseGuards(JwtAuthGuard)
     async updateDocument(
       @Param('id') id: string,
       @Body() body: UpdateDocumentDto,
@@ -55,12 +58,14 @@ import { env } from 'src/config/env';
     }
   
     @Delete('/delete/:id')
+    @UseGuards(JwtAuthGuard)
     async deleteDocument(@Param('id') id: string) {
       const data = await this.documentServices.deleteDocument(id);
       return { message: 'Document deleted successfully', data };
     }
 
     @Put('/digitize/:id')
+    @UseGuards(JwtAuthGuard)
     async digitizeDocument( @Param('id') id: string,@Body() body: { digitizeStatus: string; digitizeData: any }) {
       
       const data = await this.documentServices.digitizeDocument(id,body);
@@ -68,6 +73,7 @@ import { env } from 'src/config/env';
     }
 
     @Get('/read/documentByStatus/:status')
+    @UseGuards(JwtAuthGuard)
     async getDocumentByStatus(@Param('status') status: string) {
       const data = await this.documentServices.getDocumentByStatus(status);
       return { message: 'Documents fetched successfully', data };
@@ -80,11 +86,13 @@ import { env } from 'src/config/env';
     // }
 
     @Get('/read/documentByRole/:role/:id')
+    @UseGuards(JwtAuthGuard)
     async getDocumentByAssignedID(@Param('role') role: string, @Param('id') id: string,@Query() query: any) {
       const data = await this.documentServices.getDocumentByRoleAndAssignedAttester(role, id,query);
       return { message: 'Documents fetched successfully', data };
     }
     @Put('/addComments/:id')
+   @UseGuards(JwtAuthGuard)
    async addComments(
       @Param('id') id: string,
       @Body() body: { comment: string, userId: string ,role: string },
@@ -93,13 +101,15 @@ import { env } from 'src/config/env';
       const data = await this.documentServices.addComments(id, body);
       return { message: 'Comment added successfully', data };
     }
-    @Get('/getCommets/:id') 
+    @Get('/getCommets/:id')
+    @UseGuards(JwtAuthGuard)
     async getComments(@Param('id') id: string) {
       const data = await this.documentServices.getComments(id);
       return { message: 'Comments fetched successfully', data };
     }
 
     @Get('/documentByUser/:userId')
+    @UseGuards(JwtAuthGuard)
     async getDocumentByUser(@Param('userId') userId: string) {
       const data = await this.documentServices.getDocumentByUser(userId);
       return { message: 'Documents fetched successfully', data };

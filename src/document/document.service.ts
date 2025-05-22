@@ -54,79 +54,75 @@ export class DocumentService {
     }
   }
 
-  async getAllDocument(query: any = {}): Promise<any> {
-    try {
+ async getAllDocument(query: any = {}): Promise<any> {
+  try {
+    const {
+      page = 1,
+      limit = 1000,
+      searchText = '',
+      documentStatus = 'all',
+      ...filters
+    } = query;
 
-      const { page = 1, limit = 1000, searchText = '', documentStatus = 'all', ...filters } = query;
-      const skip = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
-
-
-      let allDocuments: DocumentTemplateType[] = [];
-      if (searchText) {
-        filters.name = { $regex: searchText, $options: 'i' }; // 'i' for case-insensitive
-      }
-
-      if (documentStatus != 'all') {
-        filters.documentStatus = documentStatus;
-        console.log('Populates:', query);
-
-        allDocuments = await this.documentModel
-          .find({ ...filters, isActive: true })
-          .sort({ createdAt: -1 })
-          .skip(skip)
-          .limit(Number(limit))
-          .populate('fields')
-          .populate('createdBy')
-          .populate('updatedBy')
-          .exec() as DocumentTemplateType[];
-      } else {
-        allDocuments = await this.documentModel
-          .find({ ...filters, isActive: true })
-          .sort({ createdAt: -1 })
-          .skip(skip)
-          .limit(Number(limit))
-          .populate('fields')
-          .populate('createdBy')
-          .populate('updatedBy')
-          .exec() as DocumentTemplateType[];
-
-      }
-
-      const match = { ...filters, isActive: true };
-
-      // run the two queries in parallel
-      const [total, docs] = await Promise.all([
-        // total number of matching records (no skip/limit)
-
-
-        this.documentModel.countDocuments(match),
-
-        // current page of documents
-        this.documentModel
-          .find(match)
-          .skip(skip)
-          .limit(Number(limit))
-          .populate('fields')
-          .populate('createdBy')
-          .populate('updatedBy')
-      ]);
-      const returnedDocuments = {
-        total,
-        page: Number(page),            // current page
-        pageSize: docs.length,         // # returned on this page
-        totalPages: Math.ceil(total / limit),
-        allDocuments
-      }
-
-      return returnedDocuments;
-    } catch (error) {
-      if (error instanceof HttpException) throw error;
-      console.log(error, "error");
-
-      throw new InternalServerErrorException('Error fetching documents');
+    // Apply case-insensitive search filter
+    if (searchText) {
+      filters.name = { $regex: searchText, $options: 'i' };
     }
+
+    // Handle documentStatus filtering
+    if (documentStatus !== 'all') {
+      if (documentStatus === 'MakerNew') {
+        filters.documentStatus = { $in: ['MakerNew', 'MakerPending', 'AttesterRework'] };
+      } else if (documentStatus === 'MakerRejected') {
+        filters.documentStatus = { $in: ['MakerRejected', 'AttesterRejected'] };
+      } else {
+        filters.documentStatus = documentStatus;
+      }
+    }
+
+    // Final match query including isActive filter
+    const match = { ...filters, isActive: true };
+
+    // Fetch the paginated result
+    const allDocuments = await this.documentModel
+      .find(match)
+      .sort({ createdAt: -1 }) // latest first
+      .skip(skip)
+      .limit(Number(limit))
+      .populate('fields')
+      .populate('createdBy')
+      .populate('updatedBy')
+      .exec() as DocumentTemplateType[];
+
+    // Run total count and paginated fetch in parallel
+    const [total, docs] = await Promise.all([
+      this.documentModel.countDocuments(match),
+      this.documentModel
+        .find(match)
+        .skip(skip)
+        .limit(Number(limit))
+        .populate('fields')
+        .populate('createdBy')
+        .populate('updatedBy')
+    ]);
+
+    // Final response object
+    return {
+      total,
+      page: Number(page),
+      pageSize: docs.length,
+      totalPages: Math.ceil(total / limit),
+      allDocuments
+    };
+  } catch (error) {
+    if (error instanceof HttpException) throw error;
+    console.log(error, "error");
+    throw new InternalServerErrorException('Error fetching documents');
   }
+}
+
 
   async getSingleDocument(documentId: string): Promise<DocumentTemplateType> {
     try {
@@ -289,7 +285,7 @@ export class DocumentService {
         document.documentStatus = DocumentStatus.AttesterRejected;
         this.walletService.callAgenAppAPI(document.caseId, 1);
       } else if (digitizeData.digitizationStatus == 'attesterRework') {
-        document.documentStatus = DocumentStatus.MakerPending;
+        document.documentStatus = DocumentStatus.AttesterRework;
       }
 
 
@@ -500,47 +496,72 @@ export class DocumentService {
       return {}
     }
   }
-  async getDocumentByRoleAndAssignedAttester(role: string, assignedAttester: string, query: any = {}): Promise<DocumentTemplateType[]> {
-    try {
-      
-      const { page = 1, limit = 1000, searchText = '', documentStatus = 'all', ...restFilters } = query;
+async getDocumentByRoleAndAssignedAttester(
+  role: string,
+  assignedAttester: string,
+  query: any = {}
+): Promise<any> {
+  try {
+    const {
+      page = 1,
+      limit = 1000,
+      searchText = '',
+      documentStatus = 'all',
+      ...restFilters
+    } = query;
 
-      const skip = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
-      const filters: any = {
-        attesterId: assignedAttester,
-        isActive: true,
-        ...restFilters,
-      };
+    const filters: any = {
+      attesterId: assignedAttester,
+      isActive: true,
+      ...restFilters,
+    };
 
-      // Add search by name (case-insensitive)
-      if (searchText) {
-        filters.name = { $regex: searchText, $options: 'i' };
+    // Add search by name (case-insensitive)
+    if (searchText) {
+      filters.name = { $regex: searchText, $options: 'i' };
+    }
+
+    // Handle special case for MakerNew
+    if (documentStatus !== 'all') {
+      if (documentStatus === 'MakerNew') {
+        filters.documentStatus = { $in: ['MakerNew', 'MakerPending'] };
+      } else {
+        filters.documentStatus = documentStatus;
       }
+    }
 
-      const documents = await this.documentModel
-        .find(filters)
-        .sort({ createdAt: -1 })
+    const match = { ...filters };
+
+    // Run total count and paginated fetch in parallel
+    const [total, allDocuments] = await Promise.all([
+      this.documentModel.countDocuments(match),
+      this.documentModel
+        .find(match)
+        .sort({ createdAt: -1 }) // latest created documents first
         .skip(skip)
-        .limit(limit)
+        .limit(Number(limit))
         .populate('fields')
         .populate('createdBy')
         .populate('updatedBy')
-        .exec();
+        .exec()
+    ]);
 
-        //need total count of documents
-        
+    return {
+      total,
+      page: Number(page),
+      pageSize: allDocuments.length,
+      totalPages: Math.ceil(total / limit),
+      allDocuments
+    };
 
-      if (!documents || documents.length === 0) {
-        throw new NotFoundException('No documents found for this role and assigned attester');
-      }
-
-      return documents;
-    } catch (error) {
-      if (error instanceof HttpException) throw error;
-      throw new InternalServerErrorException('Error fetching documents by role and assigned attester');
-    }
+  } catch (error) {
+    if (error instanceof HttpException) throw error;
+    throw new InternalServerErrorException('Error fetching documents by role and assigned attester');
   }
+}
+
   async generateCredentialHtmlView(credentialVC: string, viewUrl: string): Promise<string> {
     const vcData = JSON.parse(credentialVC);
     const qrDataUrl = await QRCode.toDataURL(viewUrl);

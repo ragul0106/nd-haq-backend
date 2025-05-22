@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Post, Param, Req, Put } from '@nestjs/common';
+import { Body, Controller, Get, Post, Param, Req, Put,UseGuards } from '@nestjs/common';
 import { SchemaService } from './schema.service';
 import { CreateSchemaDto } from './create-schema.dto';
 import { SchemaStatus } from './schema.schema';
+import { JwtAuthGuard } from 'src/user/jwt-auth.guard';
 
 @Controller('schemas')
 export class SchemaController {
@@ -13,6 +14,7 @@ export class SchemaController {
   }
 
   @Get('/getAllSchemas')
+  @UseGuards(JwtAuthGuard)
   async findAll() {
     const schemas = await this.schemaService.findAll(); // Now inferred as SchemaDocument[]
     return schemas
@@ -27,6 +29,7 @@ export class SchemaController {
   }
 
   @Get('getSchema/:id')
+  @UseGuards(JwtAuthGuard)
   async getSchema(@Param('id') id: string, @Req() req) {
     req.message = 'Schema fetched successfully';
     const schema = await this.schemaService.getById(id);
@@ -37,6 +40,7 @@ export class SchemaController {
     return this.schemaService.testFunction()
   }
   @Put('updateSchemaStatus/:id')
+  @UseGuards(JwtAuthGuard)
   async updateSchemaStatus(@Param('id') id: string, @Body() body: { status: string }) {
     let updatedSchema = {};
     if (body.status) {

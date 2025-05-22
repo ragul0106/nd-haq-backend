@@ -10,7 +10,7 @@ import { Role } from 'src/role/role.schema';
 
 @Injectable()
 export class UserService {
-    private readonly jwtSecret = new TextEncoder().encode('your-secret-key');
+    private readonly jwtSecret = new TextEncoder().encode('hdhad');
     constructor(
         @InjectModel(User.name) private userModel: Model<UserDocument>,
     ) { }
@@ -67,7 +67,7 @@ export class UserService {
                 throw new UnauthorizedException('User not approved, please contact admin');
             }
     
-            const token = await new SignJWT({ email: user.email, id: JSON.stringify(user._id), userId: user.userId ,isLoggedIn:true,roles:JSON.stringify(user.role), name:user.name,objectId:user._id })
+            const token = await new SignJWT({ email: user.email, id: JSON.stringify(user._id), userId: user.userId ,isLoggedIn:true,roles:JSON.stringify(user.role), name:user.name,objectId:user._id,isActive:user.isActive })
                 .setProtectedHeader({ alg: 'HS256' })
                 .setIssuedAt()
                 .setExpirationTime('2h')
@@ -115,8 +115,7 @@ export class UserService {
             if (error instanceof HttpException) {
                 throw error;
             }
-            console.error('error', error);
-            throw new InternalServerErrorException('Error fetching user');
+             throw new InternalServerErrorException('Error fetching user');
 
         }
     }
@@ -203,6 +202,8 @@ export class UserService {
             }
             return user;
         } catch (error) {
+            console.log(error,"ididid");
+            
             if (error instanceof HttpException) {
                 throw error;
             }
