@@ -14,7 +14,6 @@ export class SchemaController {
   }
 
   @Get('/getAllSchemas')
-  @UseGuards(JwtAuthGuard)
   async findAll() {
     const schemas = await this.schemaService.findAll(); // Now inferred as SchemaDocument[]
     return schemas
