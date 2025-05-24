@@ -483,11 +483,11 @@ export class DocumentService {
       //console.log(response, "response");
       //get file size and if it is more than 2 mb return a respones
       const fileSize = parseInt(response.headers['content-length'], 10);
-      
-      if (fileSize > 3 * 1024 * 1024) {
-        throw new InternalServerErrorException('Image size exceeds 2MB');
+      if(response.headers['content-type']!== 'image/jpeg' && response.headers['content-type']!=='image/png'){
+        if (fileSize > 3 * 1024 * 1024) {
+          throw new InternalServerErrorException('Image size exceeds 3MB');
+        }
       }
-      
 
       response.data.pipe(writer);
 
