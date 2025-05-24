@@ -4,9 +4,13 @@ import axios from 'axios';
 
 @Injectable()
 export class SchemaValidationService {
- async validateAndGenerateJSON(schema: any, inputData: Record<string, any>,imageUrl:string) {
-    
-    const originalVC = await this.fetchImageAsOriginalVC(imageUrl);
+ async validateAndGenerateJSON(schema: any, inputData: Record<string, any>,imageUrl:string,isBase64:boolean,base64:object) {
+    let originalVC;
+  if(isBase64==false){
+  originalVC = await this.fetchImageAsOriginalVC(imageUrl);
+  }else{
+    originalVC = base64
+  }
     console.log(typeof originalVC,"imageUrl");
 
     const result: Record<string, any> = {};

@@ -20,6 +20,10 @@ import { logger } from '../logger';
 import { SchemaValidationService } from 'src/common/schema-validation.service';
 import { env } from '../config/env'; // adjust path as needed
 import * as QRCode from 'qrcode';
+import * as mime from 'mime-types';
+import * as sharp from 'sharp';
+import { fetchAndCompressPdfToBase64 } from 'src/utils/utils/pdf-base64.util';
+
 @Injectable()
 export class DocumentService {
 
@@ -37,6 +41,10 @@ export class DocumentService {
     try {
       if (createDto.imageUrl) {
         createDto.imageUrl = await this.downloadImageToServer(createDto.imageUrl)
+        if(createDto.imageUrl.includes('error')){
+             throw new InternalServerErrorException('Image size exceeds 2MB');
+        }
+
       }
 
       const document = new this.documentModel({
@@ -194,9 +202,15 @@ export class DocumentService {
 
       logger.info(JSON.stringify(digitizeData));
       console.log(digitizeData.digitizationStatus);
-
+     let schemaData = await this.schemaService.getById(digitizeData.documentName)
+     console.log(schemaData.schemaName,"schemaData");
+     if(document.name.includes(schemaData.schemaName) ==false && document.name.includes(' - ')== false){
+          document.name = document.name + ' - '+schemaData.schemaName
+     }
+      
       document.digitizedData = digitizeData.jsonData;
       if (digitizeData.digitizationStatus == 'digitise') {
+       
         document.attesterId = digitizeData.attesterId;
         document.schemaId = digitizeData.documentName;
         if (document.accountId == null || document.accountId == "" || document.accountId == undefined) {
@@ -247,9 +261,11 @@ export class DocumentService {
         document.documentStatus = DocumentStatus.MakerRejected;
         this.walletService.callAgenAppAPI(document.caseId, 1);
       } else if (digitizeData.digitizationStatus == 'issueCredential') {
+        let base64Image = await this.compressImageFromUrlToBase64(env.API_ENDPOINT + document.imageUrl)
+         
         let test_cert_data = digitizeData.jsonData
-        let schemaData = await this.schemaService.getById(digitizeData.documentName)
-        let validSchema = await this.schemaValidationService.validateAndGenerateJSON(schemaData, test_cert_data, env.API_ENDPOINT + document.imageUrl);
+       
+        let validSchema = await this.schemaValidationService.validateAndGenerateJSON(schemaData, test_cert_data, env.API_ENDPOINT + document.imageUrl,true,base64Image);
         document.dhiwaySchemaId = schemaData.DhiwaySchemaId
         let walletServiceData = await this.walletService.issueVc(schemaData?.DhiwaySchemaId, validSchema.result)
         console.log(walletServiceData, "walletServiceData");
@@ -286,6 +302,8 @@ export class DocumentService {
         this.walletService.callAgenAppAPI(document.caseId, 1);
       } else if (digitizeData.digitizationStatus == 'attesterRework') {
         document.documentStatus = DocumentStatus.AttesterRework;
+      }else if(digitizeData.digitizationStatus == 'attesterReassign'){
+          document.attesterId = digitizeData.attesterId;
       }
 
 
@@ -462,6 +480,14 @@ export class DocumentService {
         url: presignedUrl,
         responseType: 'stream',
       });
+      //console.log(response, "response");
+      //get file size and if it is more than 2 mb return a respones
+      const fileSize = parseInt(response.headers['content-length'], 10);
+      
+      if (fileSize > 3 * 1024 * 1024) {
+        throw new InternalServerErrorException('Image size exceeds 2MB');
+      }
+      
 
       response.data.pipe(writer);
 
@@ -598,19 +624,31 @@ async getDocumentByRoleAndAssignedAttester(
         }
 
         // PDF link
-        if (mimetype === 'application/pdf') {
-          const pdfUrl = `data:${mimetype};base64,${base64}`;
-          return `
-          <div class="form-group">
-            <label for="${key}">${key}</label>
-            <div>
-              <a href="${pdfUrl}" download="${filename}" style="color: #1a0dab; text-decoration: underline;">
-                Download PDF: ${filename}
-              </a>
-            </div>
-          </div>
-        `;
-        }
+       if (mimetype === 'application/pdf') {
+  const pdfUrl = `data:${mimetype};base64,${base64}`;
+  const modalId = `pdfModal-${key}`;
+  const iframeId = `pdfFrame-${key}`;
+
+  return `
+    <div class="form-group">
+      <label for="${key}">${key}</label>
+      <div class="row">
+        <p onclick="showPdfModal('${pdfUrl}', '${iframeId}', '${modalId}')" style="color: #1a0dab; text-decoration: underline;">
+          View PDF
+        </p>
+        <a href="${pdfUrl}" download="${filename}" style="color: #1a0dab; text-decoration: underline;">
+          Download PDF
+        </a>
+      </div>
+
+      <!-- Modal Container -->
+      <div id="${modalId}" class="pdfModal">
+        <span onclick="closePdfModal('${modalId}')" class="pdfModalClose">&times;</span>
+        <iframe id="${iframeId}" src="${pdfUrl}" frameborder="0"></iframe>
+      </div>
+    </div>
+  `;
+}
       }
 
       // Default field
@@ -732,6 +770,41 @@ async getDocumentByRoleAndAssignedAttester(
   text-align: center;
   margin-top: 10px;
 }
+  .pdfModal {
+  display: none;
+  position: fixed;
+  z-index: 1002;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.85);
+  padding-top: 60px;
+  box-sizing: border-box;
+}
+
+.pdfModal iframe {
+  display: block;
+  margin: 40px auto;
+  width: 80%;
+  height: 80vh;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.pdfModalClose {
+  position: fixed;
+  top: 20px;
+  right: 40px;
+  color: #fff;
+  font-size: 40px;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 1003;
+}
+
       </style>
     </head>
     <body>
@@ -769,6 +842,18 @@ async getDocumentByRoleAndAssignedAttester(
 
         }
       </script>
+      <script>
+  function showPdfModal(pdfUrl, iframeId, modalId) {
+    document.getElementById(iframeId).src = pdfUrl;
+    document.getElementById(modalId).style.display = 'block';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closePdfModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+    document.body.style.overflow = '';
+  }
+</script>
     </body>
     </html>
   `;
@@ -819,5 +904,81 @@ async getDocumentByRoleAndAssignedAttester(
     </body>
     </html>
   `;
+  }
+
+  async compressImageFromUrlToBase64(imageUrl: string): Promise<object> {
+    let MAX_BASE64_SIZE_MB=3
+       let fileBuffer: Buffer;
+
+    try {
+      console.log(imageUrl, "imageUrl");
+      
+      const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+       
+       
+      fileBuffer = Buffer.from(response.data, 'binary');
+      console.log(fileBuffer.length, "response");
+
+      const originalname = imageUrl.split('/').pop() || 'file';
+      const mimetype = response.headers['content-type'] || mime.lookup(imageUrl) || 'application/octet-stream';
+
+      // Check if it's a PDF
+      if (mimetype === 'application/pdf') {
+
+        const result = await fetchAndCompressPdfToBase64(imageUrl);
+        console.log(result,"result");
+        
+
+        const base64 = fileBuffer.toString('base64');
+ 
+  const sizeMB = (base64.length * 3) / (4 * 1024 * 1024);
+
+  console.log(`PDF base64 size: ${sizeMB.toFixed(2)} MB`);
+
+  if (sizeMB > MAX_BASE64_SIZE_MB) {
+    throw new InternalServerErrorException('PDF exceeds base64 5MB limit');
+  }
+
+
+        return {
+          content: base64,
+          encoding: '7bit',
+          mimetype,
+          originalname,
+          size: fileBuffer.length,
+        };
+      }
+
+      // Else, assume it's an image – compress it
+      let quality = 80;
+      let compressedBuffer: Buffer;
+
+      while (quality >= 30) {
+        compressedBuffer = await sharp(fileBuffer)
+          .resize({ width: 1000 }) // Optional
+          .jpeg({ quality })
+          .toBuffer();
+
+        const base64 = compressedBuffer.toString('base64');
+        const sizeMB = (base64.length * 3) / (4 * 1024 * 1024);
+        if (sizeMB <= MAX_BASE64_SIZE_MB) {
+          return {
+            content: base64,
+            encoding: '7bit',
+            mimetype: 'image/jpeg',
+            originalname,
+            size: compressedBuffer.length,
+          };
+        }
+
+        quality -= 10;
+      }
+
+      throw new InternalServerErrorException('Unable to compress image under 4MB');
+    } catch (error) {
+      console.log(error, "error");
+      throw new InternalServerErrorException('Unable to compress image under 4MB1');
+    }
+   
   }
 }
